@@ -44,24 +44,14 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	var consoleStderr bytes.Buffer
 
 	//
-	storedTokenReference := "env://BOUNDARY_TOKEN"
-	storedToken := os.Getenv("BOUNDARY_TOKEN")
-
-	if storedToken == "" {
-
-		storedToken, err = globals.GetStoredToken()
-		if err != nil {
-			log.Printf("fallo al pillar el token: %s", err.Error())
-			return
-		}
-
-		storedTokenReference = "file://" + globals.BtTemporaryDir + "/BOUNDARY_TOKEN"
+	storedTokenReference, err := globals.GetStoredTokenReference()
+	if err != nil {
+		log.Fatalf("fallo al pillar el token: %s", err.Error())
 	}
 
 	// We need a target to connect to
 	if len(args) != 1 {
-		log.Print("we need a target baby")
-		return
+		log.Fatal("we need a target baby")
 	}
 
 	//

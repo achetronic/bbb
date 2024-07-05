@@ -3,6 +3,7 @@ package cmd
 import (
 	"bt/internal/cmd/auth"
 	"bt/internal/cmd/connect"
+	"bt/internal/cmd/list"
 	"bt/internal/cmd/version"
 
 	"github.com/spf13/cobra"
@@ -25,6 +26,7 @@ func NewRootCommand(name string) *cobra.Command {
 	c.AddCommand(
 		version.NewCommand(),
 		auth.NewCommand(),
+		list.NewCommand(),
 		connect.NewCommand(),
 	)
 

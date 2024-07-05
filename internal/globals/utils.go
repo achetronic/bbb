@@ -3,31 +3,9 @@ package globals
 import (
 	"errors"
 	"os"
-	"strings"
 )
 
 var BtTemporaryDir = os.TempDir() + "/bt" // TODO
-
-// CopyMap return a map that is a real copy of the original
-// Ref: https://go.dev/blog/maps
-func CopyMap(src map[string]interface{}) map[string]interface{} {
-	m := make(map[string]interface{}, len(src))
-	for k, v := range src {
-		m[k] = v
-	}
-	return m
-}
-
-// SplitCommaSeparatedValues get a list of strings and return a new list
-// where each element containing commas is divided in separated elements
-func SplitCommaSeparatedValues(input []string) []string {
-	var result []string
-	for _, item := range input {
-		parts := strings.Split(item, ",")
-		result = append(result, parts...)
-	}
-	return result
-}
 
 // GetStoredToken TODO
 func GetStoredToken() (token string, err error) {
@@ -51,4 +29,23 @@ func StoreToken(token string) (err error) {
 	//
 	err = os.WriteFile(BtTemporaryDir+"/BOUNDARY_TOKEN", []byte(token), 0700)
 	return err
+}
+
+// GetStoredTokenReference TODO
+func GetStoredTokenReference() (storedTokenReference string, err error) {
+
+	storedTokenReference = "env://BOUNDARY_TOKEN"
+	storedToken := os.Getenv("BOUNDARY_TOKEN")
+
+	if storedToken == "" {
+
+		storedToken, err = GetStoredToken()
+		if err != nil {
+			return storedTokenReference, err
+		}
+
+		storedTokenReference = "file://" + BtTemporaryDir + "/BOUNDARY_TOKEN"
+	}
+
+	return storedTokenReference, err
 }
