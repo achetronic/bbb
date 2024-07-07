@@ -1,6 +1,21 @@
 package list
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
+
+const (
+	Reset   = "\033[0m"
+	Bold    = "\033[1m"
+	Red     = "\033[31m"
+	Green   = "\033[32m"
+	Yellow  = "\033[33m"
+	Blue    = "\033[34m"
+	Magenta = "\033[35m"
+	Cyan    = "\033[36m"
+	White   = "\033[37m"
+)
 
 // Define a map for character substitutions
 var substitutionMap = map[rune]string{
@@ -57,14 +72,53 @@ func GenerateAbbreviation(text string) string {
 	return ""
 }
 
-// GetScopesByScope TODO
-func GetScopesByScope(scopes ListScopesResponseT) (result map[string][]ScopeT) {
+// TODO
+func PrintSeparator(colWidths []int, left, middle, right, line string) {
+	fmt.Print(left)
+	for i, width := range colWidths {
+		if i > 0 {
+			fmt.Print(middle)
+		}
+		fmt.Print(strings.Repeat(line, width+2))
+	}
+	fmt.Println(right)
+}
 
-	result = make(map[string][]ScopeT)
+// TODO
+func PrintTable(data [][]string) {
 
-	for _, scope := range scopes.Items {
-		result[scope.ScopeId] = append(result[scope.ScopeId], scope)
+	// Calculate max width of each column
+	colWidths := make([]int, len(data[0]))
+	for _, row := range data {
+		for i, cell := range row {
+			if len(cell) > colWidths[i] {
+				colWidths[i] = len(cell)
+			}
+		}
 	}
 
-	return result
+	// Print table with fancy separators and borders
+	PrintSeparator(colWidths, "┌", "┬", "┐", "─")
+	for rowIndex, rowContent := range data {
+		fmt.Print("│")
+		for cellIndex, cellContent := range rowContent {
+			if rowIndex == 0 {
+				// Print fancy header for first row
+				fmt.Print(" " + Bold + Blue + cellContent + Reset + strings.Repeat(" ", colWidths[cellIndex]-len(cellContent)) + " │")
+			} else {
+				fmt.Print(" " + cellContent + strings.Repeat(" ", colWidths[cellIndex]-len(cellContent)) + " │")
+			}
+		}
+
+		fmt.Println()
+
+		// Different separators according to the row to distinguish starting, middle and final ones
+		if rowIndex == 0 {
+			PrintSeparator(colWidths, "├", "┼", "┤", "─")
+		} else if rowIndex == len(data)-1 {
+			PrintSeparator(colWidths, "└", "┴", "┘", "─")
+		} else {
+			PrintSeparator(colWidths, "├", "┼", "┤", "─")
+		}
+	}
 }

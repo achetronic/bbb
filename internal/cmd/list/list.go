@@ -2,11 +2,10 @@ package list
 
 import (
 	"bt/internal/globals"
-	"bytes"
-	"encoding/json"
+	"fmt"
 	"github.com/spf13/cobra"
 	"log"
-	"os/exec"
+	"strconv"
 )
 
 const (
@@ -34,9 +33,6 @@ func NewCommand() *cobra.Command {
 func RunCommand(cmd *cobra.Command, args []string) {
 
 	var err error
-	var consoleStderr bytes.Buffer
-	var consoleStdout bytes.Buffer
-	_ = consoleStderr
 
 	//
 	storedTokenReference, err := globals.GetStoredTokenReference()
@@ -44,32 +40,19 @@ func RunCommand(cmd *cobra.Command, args []string) {
 		log.Fatalf("fallo al pillar el token: %s", err.Error())
 	}
 
-	//
-	boundaryArgs := []string{"scopes", "list", "-recursive", "-format=json", "-token=" + storedTokenReference}
-	consoleCommand := exec.Command("boundary", boundaryArgs...)
-	consoleCommand.Stdout = &consoleStdout
-	consoleCommand.Stderr = &consoleStderr
-
-	err = consoleCommand.Run()
-	if err != nil {
-		log.Fatalf("failed executing command: %v; %s", err, consoleStderr.String())
-	}
-
-	// Extract scopes from stdout
-	var response ListScopesResponseT
-	err = json.Unmarshal(consoleStdout.Bytes(), &response)
+	// Retrieve and classify the scopes by scope
+	scopes, err := GetScopes(storedTokenReference)
 	if err != nil {
 		// TODO
 		return
 	}
 
-	// Retrieve and classify the scopes
-	scopesByScope := GetScopesByScope(response)
+	scopesByScope := GetScopesByScope(scopes)
 	if _, globalScopeFound := scopesByScope["global"]; !globalScopeFound {
 		log.Fatal("No hay scopes en tu H.Boundary")
 	}
 
-	//
+	// Craft a map with abbreviation to improve UX and its related scope ID
 	projectAbbreviationToScopeMap := AbbreviationToScopeMapT{}
 
 	// Iterate over Global scope looking for Organizations
@@ -78,7 +61,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 		// Show the organization data when no specific project is selected.
 		// Projects for this organization will appear later "inside"
 		if len(args) == 0 {
-			log.Printf("%s (%s)\n", organization.Name, organization.Description)
+			fmt.Printf("%s (%s)\n", organization.Name, organization.Description)
 		}
 
 		// Iterate over Organizations looking for Projects
@@ -88,7 +71,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 
 			// List all the projects by organization when no specific one selected
 			if len(args) == 0 {
-				log.Printf("    %s => [%s] %s",
+				fmt.Printf("    %s => [%s] %s \n",
 					GenerateAbbreviation(project.Name),
 					project.Name,
 					project.Description)
@@ -97,27 +80,32 @@ func RunCommand(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	log.Print(projectAbbreviationToScopeMap)
-
 	// We need a project to list its targets from this point, honey
 	if len(args) != 1 {
 		return
 	}
 
 	// Look for the targets for desired project
-	boundaryArgs = []string{"targets", "list", "-scope-id=" + projectAbbreviationToScopeMap[args[0]], "-format=json", "-recursive", "-token=" + storedTokenReference}
-	consoleCommand = exec.Command("boundary", boundaryArgs...)
-
-	consoleStderr.Reset()
-	consoleStdout.Reset()
-
-	consoleCommand.Stdout = &consoleStdout
-	consoleCommand.Stderr = &consoleStderr
-
-	err = consoleCommand.Run()
+	targets, err := GetScopeTargets(projectAbbreviationToScopeMap[args[0]], storedTokenReference)
 	if err != nil {
-		log.Fatalf("failed executing command: %v; %s", err, consoleStderr.String())
+		// TODO
+		return
 	}
 
-	log.Print(consoleStdout.String())
+	// Print the table with the targets
+	data := [][]string{
+		{"Name", "Address", "Port", "Target ID"},
+	}
+
+	for _, target := range targets {
+		data = append(data, []string{
+			target.Name,
+			target.Address,
+			strconv.Itoa(target.Attributes.DefaultPort),
+			target.Id,
+		})
+	}
+
+	PrintTable(data)
+
 }
