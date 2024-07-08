@@ -60,6 +60,11 @@ func RunCommand(cmd *cobra.Command, args []string) {
 		fmt.Println(strings.ReplaceAll(ListOrganizationsCommandHeader, "\t", ""))
 	}
 
+	if len(scopesByScope["global"]) == 0 {
+		fmt.Println(strings.ReplaceAll(ListCommandEmpty, "\t", ""))
+		return
+	}
+
 	// Iterate over Global scope looking for Organizations
 	for _, organization := range scopesByScope["global"] {
 
@@ -102,7 +107,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// Print the table with the targets
-	projectTableHeader := strings.ToTitle(args[0])
+	projectTableHeader := "Project: " + strings.ToLower(args[0])
 	projectTableContent := [][]string{
 		{"Name", "Address", "Port", "Target ID"},
 	}

@@ -25,11 +25,7 @@ const (
 	To list the targets inside, you need to list using ` + Cyan + Bold + ` 
 	abbreviations ` + Reset + `as follows: 
 	
-	console ~$ ` + Green + Bold + `bt list ` + Cyan + Bold + `{abbreviation}` + Reset + `
-
-	Dont you see any table? you might need some permissions.
-	Contact your H.Boundary administrators and may the force be with you
-	`
+	console ~$ ` + Green + Bold + `bt list ` + Cyan + Bold + `{abbreviation}` + Reset
 
 	// TODO
 	ListProjectsCommandHeader = `
