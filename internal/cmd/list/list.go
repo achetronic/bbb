@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"log"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -58,10 +59,9 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	// Iterate over Global scope looking for Organizations
 	for _, organization := range scopesByScope["global"] {
 
-		// Show the organization data when no specific project is selected.
-		// Projects for this organization will appear later "inside"
-		if len(args) == 0 {
-			fmt.Printf("%s (%s)\n", organization.Name, organization.Description)
+		organizationTableHeader := fmt.Sprintf("%s: %s", organization.Name, organization.Description)
+		organizationTableContent := [][]string{
+			{"Abbreviation", "Project Name", "Description"},
 		}
 
 		// Iterate over Organizations looking for Projects
@@ -69,14 +69,17 @@ func RunCommand(cmd *cobra.Command, args []string) {
 
 			projectAbbreviationToScopeMap[GenerateAbbreviation(project.Name)] = project.Id
 
-			// List all the projects by organization when no specific one selected
-			if len(args) == 0 {
-				fmt.Printf("    %s => [%s] %s \n",
-					GenerateAbbreviation(project.Name),
-					project.Name,
-					project.Description)
-			}
+			organizationTableContent = append(organizationTableContent, []string{
+				GenerateAbbreviation(project.Name),
+				project.Name,
+				project.Description,
+			})
+		}
 
+		// Show the organization data when no specific project is selected.
+		// Projects for this organization will appear later "inside"
+		if len(args) == 0 {
+			PrintTable(organizationTableHeader, organizationTableContent)
 		}
 	}
 
@@ -93,12 +96,13 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// Print the table with the targets
-	data := [][]string{
+	projectTableHeader := strings.ToTitle(args[0])
+	projectTableContent := [][]string{
 		{"Name", "Address", "Port", "Target ID"},
 	}
 
 	for _, target := range targets {
-		data = append(data, []string{
+		projectTableContent = append(projectTableContent, []string{
 			target.Name,
 			target.Address,
 			strconv.Itoa(target.Attributes.DefaultPort),
@@ -106,6 +110,9 @@ func RunCommand(cmd *cobra.Command, args []string) {
 		})
 	}
 
-	PrintTable(data)
-
+	if len(projectTableContent) < 2 {
+		log.Print("No tenemos datos de esto")
+		return
+	}
+	PrintTable(projectTableHeader, projectTableContent)
 }

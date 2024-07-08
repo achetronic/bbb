@@ -2,7 +2,9 @@ package list
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
+	"unicode/utf8"
 )
 
 const (
@@ -85,31 +87,57 @@ func PrintSeparator(colWidths []int, left, middle, right, line string) {
 }
 
 // TODO
-func PrintTable(data [][]string) {
+func CalculateVisibleLength(s string) int {
+	ansiEscape := regexp.MustCompile(`\x1b\[[0-9;]*m`)
+	stripped := ansiEscape.ReplaceAllString(s, "")
+	return utf8.RuneCountInString(stripped)
+}
+
+// TODO
+func PrintTable(header string, data [][]string) {
+	if len(data) == 0 {
+		return
+	}
 
 	// Calculate max width of each column
 	colWidths := make([]int, len(data[0]))
-	for _, row := range data {
-		for i, cell := range row {
-			if len(cell) > colWidths[i] {
-				colWidths[i] = len(cell)
+	for _, rowContent := range data {
+		for cellIndex, cellContent := range rowContent {
+			cellLength := CalculateVisibleLength(cellContent)
+			if cellLength > colWidths[cellIndex] {
+				colWidths[cellIndex] = cellLength
 			}
 		}
 	}
 
+	// Print a header row when passed on arguments
+	if header != "" {
+		totalLength := 0
+		for _, colWidth := range colWidths {
+			totalLength += colWidth + 3 // Adding space for padding and separator
+		}
+
+		// Print header row with different separators as it must be integrated into the main table
+		PrintSeparator(colWidths, "┌", "─", "┐", "─")
+		fmt.Println("│ " + Bold + Magenta + header + Reset + strings.Repeat(" ", totalLength-CalculateVisibleLength(header)-3) + " │")
+		PrintSeparator(colWidths, "├", "┬", "┤", "─")
+	} else {
+		// Print table starting symbols when header is not passed
+		PrintSeparator(colWidths, "┌", "┬", "┐", "─")
+	}
+
 	// Print table with fancy separators and borders
-	PrintSeparator(colWidths, "┌", "┬", "┐", "─")
 	for rowIndex, rowContent := range data {
 		fmt.Print("│")
 		for cellIndex, cellContent := range rowContent {
+			cellLength := CalculateVisibleLength(cellContent)
 			if rowIndex == 0 {
 				// Print fancy header for first row
-				fmt.Print(" " + Bold + Blue + cellContent + Reset + strings.Repeat(" ", colWidths[cellIndex]-len(cellContent)) + " │")
+				fmt.Print(" " + Bold + Blue + cellContent + Reset + strings.Repeat(" ", colWidths[cellIndex]-cellLength) + " │")
 			} else {
-				fmt.Print(" " + cellContent + strings.Repeat(" ", colWidths[cellIndex]-len(cellContent)) + " │")
+				fmt.Print(" " + cellContent + strings.Repeat(" ", colWidths[cellIndex]-cellLength) + " │")
 			}
 		}
-
 		fmt.Println()
 
 		// Different separators according to the row to distinguish starting, middle and final ones
