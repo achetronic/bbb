@@ -17,6 +17,38 @@ const (
 	Magenta = "\033[35m"
 	Cyan    = "\033[36m"
 	White   = "\033[37m"
+
+	// TODO
+	ListOrganizationsCommandHeader = `
+	Following tables show the projects belonging to an organization.
+
+	To list the targets inside, you need to list using ` + Cyan + Bold + ` 
+	abbreviations ` + Reset + `as follows: 
+	
+	console ~$ ` + Green + Bold + `bt list ` + Cyan + Bold + `{abbreviation}` + Reset + `
+
+	Dont you see any table? you might need some permissions.
+	Contact your H.Boundary administrators and may the force be with you
+	`
+
+	// TODO
+	ListProjectsCommandHeader = `
+	Following tables show the targets belonging to an project.
+
+	To connect to a target, you need to connect using ` + Cyan + Bold + ` 
+	Target ID ` + Reset + `as follows: 
+	
+	console ~$ ` + Green + Bold + `bt connect ssh ` + Cyan + Bold + `{ttcp_example}` + Reset + `
+	console ~$ ` + Green + Bold + `bt connect kube ` + Cyan + Bold + `{ttcp_example}` + Reset + `
+
+	Remember to use ` + Bold + `ssh` + Reset + ` or ` + Bold + `kube` + Reset + ` 
+	subcommand depending on the target you are trying to connect to.
+	`
+
+	ListCommandEmpty = Magenta + Bold + `
+	Dont you see any table? you might need some permissions.
+	Contact your H.Boundary administrators and may the force be with you
+	` + Reset
 )
 
 // Define a map for character substitutions

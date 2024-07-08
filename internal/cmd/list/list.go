@@ -56,6 +56,10 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	// Craft a map with abbreviation to improve UX and its related scope ID
 	projectAbbreviationToScopeMap := AbbreviationToScopeMapT{}
 
+	if len(args) == 0 {
+		fmt.Println(strings.ReplaceAll(ListOrganizationsCommandHeader, "\t", ""))
+	}
+
 	// Iterate over Global scope looking for Organizations
 	for _, organization := range scopesByScope["global"] {
 
@@ -70,7 +74,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 			projectAbbreviationToScopeMap[GenerateAbbreviation(project.Name)] = project.Id
 
 			organizationTableContent = append(organizationTableContent, []string{
-				GenerateAbbreviation(project.Name),
+				fmt.Sprintf(Cyan+Bold+"%s"+Reset, GenerateAbbreviation(project.Name)),
 				project.Name,
 				project.Description,
 			})
@@ -87,6 +91,8 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	if len(args) != 1 {
 		return
 	}
+
+	fmt.Println(strings.ReplaceAll(ListProjectsCommandHeader, "\t", ""))
 
 	// Look for the targets for desired project
 	targets, err := GetScopeTargets(projectAbbreviationToScopeMap[args[0]], storedTokenReference)
@@ -106,12 +112,12 @@ func RunCommand(cmd *cobra.Command, args []string) {
 			target.Name,
 			target.Address,
 			strconv.Itoa(target.Attributes.DefaultPort),
-			target.Id,
+			fmt.Sprintf(Cyan+Bold+"%s"+Reset, target.Id),
 		})
 	}
 
 	if len(projectTableContent) < 2 {
-		log.Print("No tenemos datos de esto")
+		fmt.Println(strings.ReplaceAll(ListCommandEmpty, "\t", ""))
 		return
 	}
 	PrintTable(projectTableHeader, projectTableContent)
