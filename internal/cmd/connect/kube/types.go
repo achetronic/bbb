@@ -2,7 +2,8 @@ package kube
 
 // AuthorizeSessionResponseT represents... TODO
 type AuthorizeSessionResponseT struct {
-	Item struct {
+	StatusCode int `json:"status_code"`
+	Item       struct {
 		SessionId string `json:"session_id"`
 		TargetId  string `json:"target_id"`
 

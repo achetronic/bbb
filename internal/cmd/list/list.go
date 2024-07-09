@@ -1,6 +1,7 @@
 package list
 
 import (
+	"bt/internal/fancy"
 	"bt/internal/globals"
 	"fmt"
 	"github.com/spf13/cobra"
@@ -76,19 +77,19 @@ func RunCommand(cmd *cobra.Command, args []string) {
 		// Iterate over Organizations looking for Projects
 		for _, project := range scopesByScope[organization.Id] {
 
-			projectAbbreviationToScopeMap[GenerateAbbreviation(project.Name)] = project.Id
+			projectAbbreviationToScopeMap[fancy.GenerateAbbreviation(project.Name)] = project.Id
 
 			organizationTableContent = append(organizationTableContent, []string{
 				project.Name,
 				project.Description,
-				fmt.Sprintf(Cyan+Bold+"%s"+Reset, GenerateAbbreviation(project.Name)),
+				fmt.Sprintf(fancy.Cyan+fancy.Bold+"%s"+fancy.Reset, fancy.GenerateAbbreviation(project.Name)),
 			})
 		}
 
 		// Show the organization data when no specific project is selected.
 		// Projects for this organization will appear later "inside"
 		if len(args) == 0 {
-			PrintTable(organizationTableHeader, organizationTableContent)
+			fancy.PrintTable(organizationTableHeader, organizationTableContent)
 		}
 	}
 
@@ -117,7 +118,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 			target.Name,
 			target.Address,
 			strconv.Itoa(target.Attributes.DefaultPort),
-			fmt.Sprintf(Cyan+Bold+"%s"+Reset, target.Id),
+			fmt.Sprintf(fancy.Cyan+fancy.Bold+"%s"+fancy.Reset, target.Id),
 		})
 	}
 
@@ -125,5 +126,5 @@ func RunCommand(cmd *cobra.Command, args []string) {
 		fmt.Println(strings.ReplaceAll(ListCommandEmpty, "\t", ""))
 		return
 	}
-	PrintTable(projectTableHeader, projectTableContent)
+	fancy.PrintTable(projectTableHeader, projectTableContent)
 }

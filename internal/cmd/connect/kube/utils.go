@@ -1,37 +1,9 @@
 package kube
 
 import (
-	"bt/internal/cmd/list"
 	"errors"
 	"fmt"
 	"time"
-)
-
-const (
-	// TODO
-	ConnectKubeFinalMessageContent = `
-	` + list.Magenta + `Some reminders: ` + list.Reset + `
-
-	* Your H.Boundary session ID is: ` + list.Cyan + list.Bold + `%s` + list.Reset + `
-	* Your session will expire in: ` + list.Cyan + list.Bold + `%s` + list.Reset + `
-
-
-	Execute the following command to kill the connection once you don't need it: 	
-	` + list.White + list.Bold + `console ~$ ` + list.Green + `%s` + list.Reset + `
-
-	Execute the following command to kill ALL the connections at once:
-	` + list.White + list.Bold + `console ~$ ` + list.Green + `%s` + list.Reset + `
-
-
-
-	` + list.Magenta + `You are ready to query your Kubernetes cluster using command as follows:` + list.Reset + `
-
-	` + list.White + list.Bold + `console ~$ ` + list.Green + `%s` + list.Reset
-
-	ConnectKubeNotKubeTargetMessageContent = list.Magenta + list.Bold + `
-	Selected target is not configured as Kubernetes target.
-	Contact your H.Boundary administrators and may the force be with you
-	` + list.Reset
 )
 
 // GetDurationStringFromNow returns a string with a duration representation.

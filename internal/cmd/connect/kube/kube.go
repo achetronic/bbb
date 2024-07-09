@@ -1,17 +1,15 @@
 package kube
 
 import (
+	"bt/internal/fancy"
 	"bt/internal/globals"
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
-	"log"
 	"os"
 	"os/exec"
 	"strconv"
-	"strings"
 	"syscall"
 	"time"
 )
@@ -48,12 +46,12 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	//
 	storedTokenReference, err := globals.GetStoredTokenReference()
 	if err != nil {
-		log.Fatalf("fallo al pillar el token: %s", err.Error())
+		fancy.Fatalf(TokenRetrievalErrorMessage)
 	}
 
 	// We need a target to connect to
 	if len(args) != 1 {
-		log.Fatal("we need a target baby")
+		fancy.Fatalf(CommandArgsNoTargetErrorMessage)
 	}
 
 	// 1. Ask H.Boundary for an authorized session
@@ -65,20 +63,28 @@ func RunCommand(cmd *cobra.Command, args []string) {
 
 	err = authorizeSessionCommand.Run()
 	if err != nil {
-		fmt.Printf("error executing 'authorize-session' command: %s \ncommand stderr: %s",
-			err.Error(), consoleStderr.String())
-		return
+		// Brutally fail when there is no output or error to handle anything
+		if len(consoleStderr.Bytes()) == 0 && len(consoleStdout.Bytes()) == 0 {
+			fancy.Fatalf(AuthorizeSessionErrorMessage, err.Error(), consoleStderr.String())
+		}
+
+		// Forward stderr to stdout for later processing
+		consoleStdout = consoleStderr
 	}
 
 	//
 	var response AuthorizeSessionResponseT
 	err = json.Unmarshal(consoleStdout.Bytes(), &response)
 	if err != nil {
-		// TODO
-		return
+		fancy.Fatalf(UnexpectedErrorMessage, err.Error())
 	}
 
-	//
+	// On user failures, just inform the user
+	if response.StatusCode >= 400 && response.StatusCode < 500 {
+		fancy.Fatalf(AuthorizeSessionUserErrorMessage, consoleStdout.String())
+	}
+
+	// Check whether the target and user's requested type match
 	credentialsIndex := -1
 	for credentialIndex, credential := range response.Item.Credentials {
 		if credential.Secret.Decoded.ServiceAccountName != "" {
@@ -87,8 +93,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	}
 
 	if credentialsIndex == -1 {
-		fmt.Print(strings.ReplaceAll(ConnectKubeNotKubeTargetMessageContent, "\t", ""))
-		return
+		fancy.Fatalf(NotKubeTargetErrorMessage)
 	}
 
 	//
@@ -110,19 +115,19 @@ func RunCommand(cmd *cobra.Command, args []string) {
 
 	err = connectCommand.Start()
 	if err != nil {
-		fmt.Printf("error executing 'connect' command: %s \ncommand stderr: %s",
-			err.Error(), consoleStderr.String())
-		return
+		fancy.Fatalf(UnexpectedErrorMessage,
+			"Failed executing 'boundary connect' command: "+err.Error()+"\nCommand stderr: "+consoleStderr.String())
 	}
 
 	connectSessionStdoutEmpty := true
 	var connectSessionStdoutRaw []byte
 	for loop := 0; loop <= 10 && connectSessionStdoutEmpty == true; loop++ {
 
-		connectSessionStdoutRaw, err = os.ReadFile(globals.BtTemporaryDir + "/" + sessionFileName + ".out")
+		stdoutFile := globals.BtTemporaryDir + "/" + sessionFileName + ".out"
+
+		connectSessionStdoutRaw, err = os.ReadFile(stdoutFile)
 		if err != nil {
-			fmt.Printf("error reading file '%s': %s", globals.BtTemporaryDir+"/"+sessionFileName+".out", err.Error())
-			return
+			fancy.Fatalf(UnexpectedErrorMessage, "Failed reading file '"+stdoutFile+"': "+err.Error())
 		}
 
 		if len(connectSessionStdoutRaw) > 0 {
@@ -133,17 +138,14 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	}
 
 	if connectSessionStdoutEmpty {
-		log.Print("no hay contenido perra sata")
-		return
+		fancy.Fatalf(UnexpectedErrorMessage, "There is no content on 'connect' stdout command execution")
 	}
 
 	//
 	var connectSessionStdout ConnectSessionStdoutT
 	err = json.Unmarshal(connectSessionStdoutRaw, &connectSessionStdout)
 	if err != nil {
-		log.Printf("pepito err 1: %s", err.Error())
-		// TODO
-		return
+		fancy.Fatalf(UnexpectedErrorMessage, "Failed converting JSON object into Struct: "+err.Error())
 	}
 
 	// 3. Craft a temporary kubeconfig for this session in a temporary directory,
@@ -182,28 +184,24 @@ func RunCommand(cmd *cobra.Command, args []string) {
 
 	kubeconfigContent, err := yaml.Marshal(kubeconfig)
 	if err != nil {
-		log.Printf("pepito err: %s", err.Error()) // TODO
-		return
+		fancy.Fatalf(UnexpectedErrorMessage, "Failed converting kubeconfig object into YAML: "+err.Error())
 	}
 
 	err = os.WriteFile(globals.BtTemporaryDir+"/"+connectSessionStdout.SessionId+".yaml", kubeconfigContent, 0700)
 	if err != nil {
-		log.Printf("pepito err 2: %s", err.Error()) // TODO
-		return
+		fancy.Fatalf(UnexpectedErrorMessage, "Failed writing kubeconfig YAML in temporary directory: "+err.Error())
 	}
 
 	// 4. Show final message to the user
 	durationStringFromNow, err := GetDurationStringFromNow(connectSessionStdout.Expiration)
 	if err != nil {
-		log.Printf("Error getting session duration: %s ", err.Error()) // TODO
-		return
+		fancy.Fatalf(UnexpectedErrorMessage, "Error getting session duration: "+err.Error())
 	}
 
-	fmt.Printf(strings.ReplaceAll(ConnectKubeFinalMessageContent, "\t", ""),
+	fancy.Printf(ConnectionSuccessfulMessage,
 		connectSessionStdout.SessionId,
 		durationStringFromNow,
 		"kill -INT "+strconv.Itoa(authorizeSessionCommand.Process.Pid),
 		"pkill -f '^boundary connect'",
-		"kubectl --kubeconfig="+globals.BtTemporaryDir+"/"+connectSessionStdout.SessionId+".yaml get pods",
-	)
+		"kubectl --kubeconfig="+globals.BtTemporaryDir+"/"+connectSessionStdout.SessionId+".yaml get pods")
 }
