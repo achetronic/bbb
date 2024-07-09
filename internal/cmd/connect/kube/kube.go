@@ -75,7 +75,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	var response AuthorizeSessionResponseT
 	err = json.Unmarshal(consoleStdout.Bytes(), &response)
 	if err != nil {
-		fancy.Fatalf(UnexpectedErrorMessage, err.Error())
+		fancy.Fatalf(UnexpectedErrorMessage, "Failed converting JSON object into Struct: "+err.Error())
 	}
 
 	// On user failures, just inform the user

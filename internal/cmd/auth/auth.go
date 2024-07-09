@@ -1,11 +1,11 @@
 package auth
 
 import (
+	"bt/internal/fancy"
 	"bt/internal/globals"
 	"bytes"
 	"encoding/json"
 	"github.com/spf13/cobra"
-	"log"
 	"os/exec"
 )
 
@@ -42,24 +42,31 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	err := consoleCommand.Run()
 	if err != nil {
 
-		log.Printf("failed executing command: %v; %s", err, consoleStderr.String())
-		return
+		// Brutally fail when there is no output or error to handle anything
+		if len(consoleStderr.Bytes()) == 0 && len(consoleStdout.Bytes()) == 0 {
+			fancy.Fatalf(AuthErrorMessage, err.Error(), consoleStderr.String())
+		}
+
+		// Forward stderr to stdout for later processing
+		consoleStdout = consoleStderr
 	}
 
 	//
 	var response ResponseT
-	log.Print(consoleStdout.String())
 	err = json.Unmarshal(consoleStdout.Bytes(), &response)
 	if err != nil {
-		// TODO
-		return
+		fancy.Fatalf(UnexpectedErrorMessage, "Failed converting JSON object into Struct: "+err.Error())
+	}
+
+	// On user failures, just inform the user
+	if response.StatusCode >= 400 && response.StatusCode < 500 {
+		fancy.Fatalf(AuthUserErrorMessage, consoleStdout.String())
 	}
 
 	err = globals.StoreToken(response.Item.Attributes.Token)
 	if err != nil {
-		log.Print("mallll")
-		return
+		fancy.Fatalf(UnexpectedErrorMessage, "Failed to store H.Boundary token in your system: "+err.Error())
 	}
 
-	log.Print("CP1")
+	fancy.Printf(AuthSuccessfulMessage)
 }
