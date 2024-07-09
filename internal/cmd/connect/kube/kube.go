@@ -65,7 +65,8 @@ func RunCommand(cmd *cobra.Command, args []string) {
 
 	err = authorizeSessionCommand.Run()
 	if err != nil {
-		log.Printf("failed executing command: %v; %s", err, consoleStderr.String())
+		fmt.Printf("error executing 'authorize-session' command: %s \ncommand stderr: %s",
+			err.Error(), consoleStderr.String())
 		return
 	}
 
@@ -86,7 +87,8 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	}
 
 	if credentialsIndex == -1 {
-		log.Fatal("Target is not configured as Kubernetes target. Quitting...")
+		fmt.Print(strings.ReplaceAll(ConnectKubeNotKubeTargetMessageContent, "\t", ""))
+		return
 	}
 
 	//
@@ -108,7 +110,8 @@ func RunCommand(cmd *cobra.Command, args []string) {
 
 	err = connectCommand.Start()
 	if err != nil {
-		log.Printf("Error ejecutando el comando: %v", err)
+		fmt.Printf("error executing 'connect' command: %s \ncommand stderr: %s",
+			err.Error(), consoleStderr.String())
 		return
 	}
 
@@ -118,7 +121,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 
 		connectSessionStdoutRaw, err = os.ReadFile(globals.BtTemporaryDir + "/" + sessionFileName + ".out")
 		if err != nil {
-			log.Printf("pepito err 0: %s", err.Error()) // TODO
+			fmt.Printf("error reading file '%s': %s", globals.BtTemporaryDir+"/"+sessionFileName+".out", err.Error())
 			return
 		}
 

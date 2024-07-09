@@ -27,6 +27,11 @@ const (
 	` + list.Magenta + `You are ready to query your Kubernetes cluster using command as follows:` + list.Reset + `
 
 	` + list.White + list.Bold + `console ~$ ` + list.Green + `%s` + list.Reset
+
+	ConnectKubeNotKubeTargetMessageContent = list.Magenta + list.Bold + `
+	Selected target is not configured as Kubernetes target.
+	Contact your H.Boundary administrators and may the force be with you
+	` + list.Reset
 )
 
 // GetDurationStringFromNow returns a string with a duration representation.
