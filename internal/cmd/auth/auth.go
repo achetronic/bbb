@@ -1,12 +1,14 @@
 package auth
 
 import (
-	"bt/internal/fancy"
-	"bt/internal/globals"
 	"bytes"
 	"encoding/json"
-	"github.com/spf13/cobra"
 	"os/exec"
+
+	"github.com/spf13/cobra"
+
+	"bt/internal/fancy"
+	"bt/internal/globals"
 )
 
 const (

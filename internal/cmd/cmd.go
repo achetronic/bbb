@@ -1,12 +1,12 @@
 package cmd
 
 import (
+	"github.com/spf13/cobra"
+
 	"bt/internal/cmd/auth"
 	"bt/internal/cmd/connect"
 	"bt/internal/cmd/list"
 	"bt/internal/cmd/version"
-
-	"github.com/spf13/cobra"
 )
 
 const (

@@ -1,17 +1,19 @@
 package kube
 
 import (
-	"bt/internal/fancy"
-	"bt/internal/globals"
 	"bytes"
 	"encoding/json"
-	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 	"os"
 	"os/exec"
 	"strconv"
 	"syscall"
 	"time"
+
+	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
+
+	"bt/internal/fancy"
+	"bt/internal/globals"
 )
 
 const (

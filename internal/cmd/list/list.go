@@ -1,13 +1,15 @@
 package list
 
 import (
-	"bt/internal/fancy"
-	"bt/internal/globals"
 	"fmt"
-	"github.com/spf13/cobra"
 	"log"
 	"strconv"
 	"strings"
+
+	"github.com/spf13/cobra"
+
+	"bt/internal/fancy"
+	"bt/internal/globals"
 )
 
 const (

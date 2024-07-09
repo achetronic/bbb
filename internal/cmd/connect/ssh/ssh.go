@@ -1,12 +1,16 @@
 package ssh
 
 import (
-	"bt/internal/globals"
 	"bytes"
-	"github.com/spf13/cobra"
 	"log"
 	"os"
 	"os/exec"
+
+	"github.com/spf13/cobra"
+
+	"bt/internal/cmd/connect/kube"
+	"bt/internal/fancy"
+	"bt/internal/globals"
 )
 
 const (
@@ -39,12 +43,12 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	//
 	storedTokenReference, err := globals.GetStoredTokenReference()
 	if err != nil {
-		log.Fatalf("fallo al pillar el token: %s", err.Error())
+		fancy.Fatalf(globals.TokenRetrievalErrorMessage)
 	}
 
 	// We need a target to connect to
 	if len(args) != 1 {
-		log.Fatal("we need a target baby")
+		fancy.Fatalf(kube.CommandArgsNoTargetErrorMessage)
 	}
 
 	//
