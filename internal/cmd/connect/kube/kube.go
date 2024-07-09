@@ -45,7 +45,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	//
 	storedTokenReference, err := globals.GetStoredTokenReference()
 	if err != nil {
-		fancy.Fatalf(TokenRetrievalErrorMessage)
+		fancy.Fatalf(globals.TokenRetrievalErrorMessage)
 	}
 
 	// We need a target to connect to
@@ -75,7 +75,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	var response AuthorizeSessionResponseT
 	err = json.Unmarshal(consoleStdout.Bytes(), &response)
 	if err != nil {
-		fancy.Fatalf(UnexpectedErrorMessage, "Failed converting JSON object into Struct: "+err.Error())
+		fancy.Fatalf(globals.UnexpectedErrorMessage, "Failed converting JSON object into Struct: "+err.Error())
 	}
 
 	// On user failures, just inform the user
@@ -114,7 +114,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 
 	err = connectCommand.Start()
 	if err != nil {
-		fancy.Fatalf(UnexpectedErrorMessage,
+		fancy.Fatalf(globals.UnexpectedErrorMessage,
 			"Failed executing 'boundary connect' command: "+err.Error()+"\nCommand stderr: "+consoleStderr.String())
 	}
 
@@ -126,7 +126,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 
 		connectSessionStdoutRaw, err = os.ReadFile(stdoutFile)
 		if err != nil {
-			fancy.Fatalf(UnexpectedErrorMessage, "Failed reading file '"+stdoutFile+"': "+err.Error())
+			fancy.Fatalf(globals.UnexpectedErrorMessage, "Failed reading file '"+stdoutFile+"': "+err.Error())
 		}
 
 		if len(connectSessionStdoutRaw) > 0 {
@@ -137,14 +137,14 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	}
 
 	if connectSessionStdoutEmpty {
-		fancy.Fatalf(UnexpectedErrorMessage, "There is no content on 'connect' stdout command execution")
+		fancy.Fatalf(globals.UnexpectedErrorMessage, "There is no content on 'connect' stdout command execution")
 	}
 
 	//
 	var connectSessionStdout ConnectSessionStdoutT
 	err = json.Unmarshal(connectSessionStdoutRaw, &connectSessionStdout)
 	if err != nil {
-		fancy.Fatalf(UnexpectedErrorMessage, "Failed converting JSON object into Struct: "+err.Error())
+		fancy.Fatalf(globals.UnexpectedErrorMessage, "Failed converting JSON object into Struct: "+err.Error())
 	}
 
 	// 3. Craft a temporary kubeconfig for this session in a temporary directory,
@@ -183,18 +183,18 @@ func RunCommand(cmd *cobra.Command, args []string) {
 
 	kubeconfigContent, err := yaml.Marshal(kubeconfig)
 	if err != nil {
-		fancy.Fatalf(UnexpectedErrorMessage, "Failed converting kubeconfig object into YAML: "+err.Error())
+		fancy.Fatalf(globals.UnexpectedErrorMessage, "Failed converting kubeconfig object into YAML: "+err.Error())
 	}
 
 	err = os.WriteFile(globals.BtTemporaryDir+"/"+connectSessionStdout.SessionId+".yaml", kubeconfigContent, 0700)
 	if err != nil {
-		fancy.Fatalf(UnexpectedErrorMessage, "Failed writing kubeconfig YAML in temporary directory: "+err.Error())
+		fancy.Fatalf(globals.UnexpectedErrorMessage, "Failed writing kubeconfig YAML in temporary directory: "+err.Error())
 	}
 
 	// 4. Show final message to the user
 	durationStringFromNow, err := GetDurationStringFromNow(connectSessionStdout.Expiration)
 	if err != nil {
-		fancy.Fatalf(UnexpectedErrorMessage, "Error getting session duration: "+err.Error())
+		fancy.Fatalf(globals.UnexpectedErrorMessage, "Error getting session duration: "+err.Error())
 	}
 
 	fancy.Printf(ConnectionSuccessfulMessage,

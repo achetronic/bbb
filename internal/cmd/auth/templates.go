@@ -1,11 +1,6 @@
 package auth
 
 const (
-	UnexpectedErrorMessage = `
-	{Red}There was an unexpected error.
-
-	{White}What happened under the hood:
-	{Italic}%s`
 
 	// AuthErrorMessage message is thrown when there is an error
 	// different from 4xx on 'auth' command execution

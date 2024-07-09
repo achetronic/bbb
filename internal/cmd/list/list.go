@@ -39,13 +39,13 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	//
 	storedTokenReference, err := globals.GetStoredTokenReference()
 	if err != nil {
-		fancy.Fatalf(TokenRetrievalErrorMessage)
+		fancy.Fatalf(globals.TokenRetrievalErrorMessage)
 	}
 
 	// 1. Retrieve and classify the scopes by scope
 	scopes, err := GetScopes(storedTokenReference)
 	if err != nil {
-		fancy.Fatalf(UnexpectedErrorMessage, "Failed getting scopes: "+err.Error())
+		fancy.Fatalf(globals.UnexpectedErrorMessage, "Failed getting scopes: "+err.Error())
 	}
 
 	scopesByScope := GetScopesByScope(scopes)
@@ -105,7 +105,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	// Look for the targets for desired project
 	targets, err := GetScopeTargets(projectAbbreviationToScopeMap[args[0]], storedTokenReference)
 	if err != nil {
-		fancy.Fatalf(UnexpectedErrorMessage, "Failed getting targets from scope '"+projectAbbreviationToScopeMap[args[0]]+"': "+err.Error())
+		fancy.Fatalf(globals.UnexpectedErrorMessage, "Failed getting targets from scope '"+projectAbbreviationToScopeMap[args[0]]+"': "+err.Error())
 	}
 
 	// Print the table with the targets

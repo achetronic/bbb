@@ -55,7 +55,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	var response ResponseT
 	err = json.Unmarshal(consoleStdout.Bytes(), &response)
 	if err != nil {
-		fancy.Fatalf(UnexpectedErrorMessage, "Failed converting JSON object into Struct: "+err.Error())
+		fancy.Fatalf(globals.UnexpectedErrorMessage, "Failed converting JSON object into Struct: "+err.Error())
 	}
 
 	// On user failures, just inform the user
@@ -65,7 +65,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 
 	err = globals.StoreToken(response.Item.Attributes.Token)
 	if err != nil {
-		fancy.Fatalf(UnexpectedErrorMessage, "Failed to store H.Boundary token in your system: "+err.Error())
+		fancy.Fatalf(globals.UnexpectedErrorMessage, "Failed to store H.Boundary token in your system: "+err.Error())
 	}
 
 	fancy.Printf(AuthSuccessfulMessage)

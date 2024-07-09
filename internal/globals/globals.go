@@ -1,48 +1,51 @@
 package globals
 
 import (
-	"context"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
-	"time"
+	"errors"
+	"os"
 )
 
-var (
-	ExecContext = ExecutionContext{
-		Context: context.Background(),
+var BtTemporaryDir = os.TempDir() + "/bt" // TODO
+
+// GetStoredToken TODO
+func GetStoredToken() (token string, err error) {
+	fileContent, err := os.ReadFile(BtTemporaryDir + "/BOUNDARY_TOKEN")
+	token = string(fileContent)
+	if token == "" {
+		err = errors.New("no token found")
 	}
-)
-
-// ExecutionContext TODO
-type ExecutionContext struct {
-	Context context.Context
-	Logger  zap.SugaredLogger
+	return token, err
 }
 
-// SetLogger TODO
-func SetLogger(logLevel string, disableTrace bool) (err error) {
-	parsedLogLevel, err := zap.ParseAtomicLevel(logLevel)
+// StoreToken stores the token into a temporary file
+func StoreToken(token string) (err error) {
+
+	//
+	err = os.MkdirAll(BtTemporaryDir, 0700)
 	if err != nil {
 		return err
 	}
 
-	// Initialize the logger
-	loggerConfig := zap.NewProductionConfig()
-	if disableTrace {
-		loggerConfig.DisableStacktrace = true
-		loggerConfig.DisableCaller = true
+	//
+	err = os.WriteFile(BtTemporaryDir+"/BOUNDARY_TOKEN", []byte(token), 0700)
+	return err
+}
+
+// GetStoredTokenReference TODO
+func GetStoredTokenReference() (storedTokenReference string, err error) {
+
+	storedTokenReference = "env://BOUNDARY_TOKEN"
+	storedToken := os.Getenv("BOUNDARY_TOKEN")
+
+	if storedToken == "" {
+
+		storedToken, err = GetStoredToken()
+		if err != nil {
+			return storedTokenReference, err
+		}
+
+		storedTokenReference = "file://" + BtTemporaryDir + "/BOUNDARY_TOKEN"
 	}
 
-	loggerConfig.EncoderConfig.TimeKey = "timestamp"
-	loggerConfig.EncoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout(time.RFC3339)
-	loggerConfig.Level.SetLevel(parsedLogLevel.Level())
-
-	// Configure the logger
-	logger, err := loggerConfig.Build()
-	if err != nil {
-		return err
-	}
-
-	ExecContext.Logger = *logger.Sugar()
-	return nil
+	return storedTokenReference, err
 }
