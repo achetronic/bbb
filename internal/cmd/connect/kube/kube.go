@@ -35,7 +35,6 @@ func NewCommand() *cobra.Command {
 }
 
 // RunCommand TODO
-// Ref: https://pkg.go.dev/github.com/spf13/pflag#StringSlice
 // Ref: https://support.hashicorp.com/hc/en-us/articles/21521422906131-BOUNDARY-Different-ways-to-connect-to-Kubernetes-cluster
 // Ref: https://discuss.hashicorp.com/t/boundary-connect-usage-in-script/37658
 func RunCommand(cmd *cobra.Command, args []string) {

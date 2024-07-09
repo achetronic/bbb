@@ -39,14 +39,13 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	//
 	storedTokenReference, err := globals.GetStoredTokenReference()
 	if err != nil {
-		log.Fatalf("fallo al pillar el token: %s", err.Error())
+		fancy.Fatalf(TokenRetrievalErrorMessage)
 	}
 
-	// Retrieve and classify the scopes by scope
+	// 1. Retrieve and classify the scopes by scope
 	scopes, err := GetScopes(storedTokenReference)
 	if err != nil {
-		// TODO
-		return
+		fancy.Fatalf(UnexpectedErrorMessage, "Failed getting scopes: "+err.Error())
 	}
 
 	scopesByScope := GetScopesByScope(scopes)
@@ -54,19 +53,19 @@ func RunCommand(cmd *cobra.Command, args []string) {
 		log.Fatal("No hay scopes en tu H.Boundary")
 	}
 
-	// Craft a map with abbreviation to improve UX and its related scope ID
+	// 2. Craft a map with abbreviation to improve UX and its related scope ID
 	projectAbbreviationToScopeMap := AbbreviationToScopeMapT{}
 
 	if len(args) == 0 {
-		fmt.Println(strings.ReplaceAll(ListOrganizationsCommandHeader, "\t", ""))
+		fancy.Printf(ListOrganizationsCommandHeader)
 	}
 
 	if len(scopesByScope["global"]) == 0 {
-		fmt.Println(strings.ReplaceAll(ListCommandEmpty, "\t", ""))
-		return
+		fancy.Fatalf(ListCommandEmpty)
 	}
 
-	// Iterate over Global scope looking for Organizations
+	// 3. Iterate over Global scope looking for Organizations. For each organization, this will
+	// print a table with its scopes
 	for _, organization := range scopesByScope["global"] {
 
 		organizationTableHeader := fmt.Sprintf("%s: %s", organization.Name, organization.Description)
@@ -82,7 +81,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 			organizationTableContent = append(organizationTableContent, []string{
 				project.Name,
 				project.Description,
-				fmt.Sprintf(fancy.Cyan+fancy.Bold+"%s"+fancy.Reset, fancy.GenerateAbbreviation(project.Name)),
+				fmt.Sprintf(fancy.Bold+fancy.Cyan+"%s"+fancy.Reset, fancy.GenerateAbbreviation(project.Name)),
 			})
 		}
 
@@ -93,18 +92,20 @@ func RunCommand(cmd *cobra.Command, args []string) {
 		}
 	}
 
+	// 4. Retrieve targets for passed scope. This will print a table with all the targets available
+	// for authenticated user on that scope
+
 	// We need a project to list its targets from this point, honey
 	if len(args) != 1 {
 		return
 	}
 
-	fmt.Println(strings.ReplaceAll(ListProjectsCommandHeader, "\t", ""))
+	fancy.Printf(ListProjectsCommandHeader)
 
 	// Look for the targets for desired project
 	targets, err := GetScopeTargets(projectAbbreviationToScopeMap[args[0]], storedTokenReference)
 	if err != nil {
-		// TODO
-		return
+		fancy.Fatalf(UnexpectedErrorMessage, "Failed getting targets from scope '"+projectAbbreviationToScopeMap[args[0]]+"': "+err.Error())
 	}
 
 	// Print the table with the targets
@@ -123,8 +124,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	}
 
 	if len(projectTableContent) < 2 {
-		fmt.Println(strings.ReplaceAll(ListCommandEmpty, "\t", ""))
-		return
+		fancy.Fatalf(ListCommandEmpty)
 	}
 	fancy.PrintTable(projectTableHeader, projectTableContent)
 }

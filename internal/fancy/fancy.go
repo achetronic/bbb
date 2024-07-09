@@ -63,6 +63,7 @@ func Printf(format string, a ...any) {
 	parsedText := GetReplacedTextFromTemplate(format+"{Reset}", StyleMap)
 	parsedText = strings.ReplaceAll(parsedText, "\t", "")
 	parsedText = strings.TrimSpace(parsedText)
+	parsedText = parsedText + "\n\n"
 
 	fmt.Printf(parsedText, a...)
 }
