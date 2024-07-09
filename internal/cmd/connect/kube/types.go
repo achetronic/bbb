@@ -21,9 +21,10 @@ type AuthorizeSessionResponseT struct {
 
 // TODO
 type ConnectSessionStdoutT struct {
-	Address   string `json:"address"`
-	Port      int    `json:"port"`
-	SessionId string `json:"session_id"`
+	Address    string `json:"address"`
+	Expiration string `json:"expiration"`
+	Port       int    `json:"port"`
+	SessionId  string `json:"session_id"`
 }
 
 // TODO

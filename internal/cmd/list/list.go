@@ -70,7 +70,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 
 		organizationTableHeader := fmt.Sprintf("%s: %s", organization.Name, organization.Description)
 		organizationTableContent := [][]string{
-			{"Abbreviation", "Project Name", "Description"},
+			{"Project Name", "Description", "Abbreviation"},
 		}
 
 		// Iterate over Organizations looking for Projects
@@ -79,9 +79,9 @@ func RunCommand(cmd *cobra.Command, args []string) {
 			projectAbbreviationToScopeMap[GenerateAbbreviation(project.Name)] = project.Id
 
 			organizationTableContent = append(organizationTableContent, []string{
-				fmt.Sprintf(Cyan+Bold+"%s"+Reset, GenerateAbbreviation(project.Name)),
 				project.Name,
 				project.Description,
+				fmt.Sprintf(Cyan+Bold+"%s"+Reset, GenerateAbbreviation(project.Name)),
 			})
 		}
 

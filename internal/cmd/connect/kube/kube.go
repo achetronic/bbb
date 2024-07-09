@@ -4,12 +4,14 @@ import (
 	"bt/internal/globals"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 	"log"
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -54,15 +56,15 @@ func RunCommand(cmd *cobra.Command, args []string) {
 		log.Fatal("we need a target baby")
 	}
 
-	//
+	// 1. Ask H.Boundary for an authorized session
+	// This request will provide a session ID and brokered credentials associated to the target
 	boundaryArgs := []string{"targets", "authorize-session", "-id=" + args[0], "-token=" + storedTokenReference, "-format=json"}
-	consoleCommand := exec.Command("boundary", boundaryArgs...)
-	consoleCommand.Stdout = &consoleStdout
-	consoleCommand.Stderr = &consoleStderr
+	authorizeSessionCommand := exec.Command("boundary", boundaryArgs...)
+	authorizeSessionCommand.Stdout = &consoleStdout
+	authorizeSessionCommand.Stderr = &consoleStderr
 
-	err = consoleCommand.Run()
+	err = authorizeSessionCommand.Run()
 	if err != nil {
-
 		log.Printf("failed executing command: %v; %s", err, consoleStderr.String())
 		return
 	}
@@ -91,20 +93,20 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	targetSessionToken := response.Item.AuthorizationToken
 	targetSessionKubernetesSaToken := response.Item.Credentials[credentialsIndex].Secret.Decoded.ServiceAccountToken
 
-	//
+	// 2. Create a TCP connection to the target with authorized session previously created
+	// User commands will be performed over this connection
 	boundaryArgs = []string{"connect", "-authz-token=" + targetSessionToken, "-token=" + storedTokenReference, "-format=json"}
-
-	consoleCommand = exec.Command("boundary", boundaryArgs...)
+	connectCommand := exec.Command("boundary", boundaryArgs...)
 
 	sessionFileName := targetSessionToken[:10]
-	consoleCommand.Stdout, _ = os.OpenFile(globals.BtTemporaryDir+"/"+sessionFileName+".out", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0700)
-	consoleCommand.Stderr, _ = os.OpenFile(globals.BtTemporaryDir+"/"+sessionFileName+".err", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0700)
+	connectCommand.Stdout, _ = os.OpenFile(globals.BtTemporaryDir+"/"+sessionFileName+".out", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0700)
+	connectCommand.Stderr, _ = os.OpenFile(globals.BtTemporaryDir+"/"+sessionFileName+".err", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0700)
 
-	consoleCommand.SysProcAttr = &syscall.SysProcAttr{
+	connectCommand.SysProcAttr = &syscall.SysProcAttr{
 		Setsid: true,
 	}
 
-	err = consoleCommand.Start()
+	err = connectCommand.Start()
 	if err != nil {
 		log.Printf("Error ejecutando el comando: %v", err)
 		return
@@ -116,9 +118,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 
 		connectSessionStdoutRaw, err = os.ReadFile(globals.BtTemporaryDir + "/" + sessionFileName + ".out")
 		if err != nil {
-			log.Printf("pepito err 0: %s", err.Error())
-
-			// TODO
+			log.Printf("pepito err 0: %s", err.Error()) // TODO
 			return
 		}
 
@@ -143,7 +143,8 @@ func RunCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	//
+	// 3. Craft a temporary kubeconfig for this session in a temporary directory,
+	// in a temporary heart, in a temp... oh wait, recursive comment detected
 	kubeconfig := KubeconfigT{
 		ApiVersion: "v1",
 		Kind:       "Config",
@@ -178,18 +179,28 @@ func RunCommand(cmd *cobra.Command, args []string) {
 
 	kubeconfigContent, err := yaml.Marshal(kubeconfig)
 	if err != nil {
-		log.Printf("pepito err: %s", err.Error())
-		// TODO
+		log.Printf("pepito err: %s", err.Error()) // TODO
 		return
 	}
 
 	err = os.WriteFile(globals.BtTemporaryDir+"/"+connectSessionStdout.SessionId+".yaml", kubeconfigContent, 0700)
 	if err != nil {
-		log.Printf("pepito err 2: %s", err.Error())
-		// TODO
+		log.Printf("pepito err 2: %s", err.Error()) // TODO
 		return
 	}
 
-	// Craftear el kubeconfig
-	log.Printf("Execute your kubectl commands using auto-generated kubeconfig like this: kubectl --kubeconfig=%s.yaml get pods", globals.BtTemporaryDir+"/"+connectSessionStdout.SessionId)
+	// 4. Show final message to the user
+	durationStringFromNow, err := GetDurationStringFromNow(connectSessionStdout.Expiration)
+	if err != nil {
+		log.Printf("Error getting session duration: %s ", err.Error()) // TODO
+		return
+	}
+
+	fmt.Printf(strings.ReplaceAll(ConnectKubeFinalMessageContent, "\t", ""),
+		connectSessionStdout.SessionId,
+		durationStringFromNow,
+		"kill -INT "+strconv.Itoa(authorizeSessionCommand.Process.Pid),
+		"pkill -f '^boundary connect'",
+		"kubectl --kubeconfig="+globals.BtTemporaryDir+"/"+connectSessionStdout.SessionId+".yaml get pods",
+	)
 }
