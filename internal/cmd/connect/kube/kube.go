@@ -1,17 +1,16 @@
 package kube
 
 import (
+	"bt/internal/boundary"
 	"bytes"
 	"encoding/json"
+	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
 	"syscall"
-	"time"
-
-	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 
 	"bt/internal/fancy"
 	"bt/internal/globals"
@@ -75,7 +74,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	}
 
 	//
-	var response AuthorizeSessionResponseT
+	var response boundary.AuthorizeSessionResponseT
 	err = json.Unmarshal(consoleStdout.Bytes(), &response)
 	if err != nil {
 		fancy.Fatalf(globals.UnexpectedErrorMessage, "Failed converting JSON object into Struct: "+err.Error())
@@ -121,30 +120,15 @@ func RunCommand(cmd *cobra.Command, args []string) {
 			"Failed executing 'boundary connect' command: "+err.Error()+"\nCommand stderr: "+consoleStderr.String())
 	}
 
-	connectSessionStdoutEmpty := true
-	var connectSessionStdoutRaw []byte
-	for loop := 0; loop <= 10 && connectSessionStdoutEmpty == true; loop++ {
-
-		stdoutFile := globals.BtTemporaryDir + "/" + sessionFileName + ".out"
-
-		connectSessionStdoutRaw, err = os.ReadFile(stdoutFile)
-		if err != nil {
-			fancy.Fatalf(globals.UnexpectedErrorMessage, "Failed reading file '"+stdoutFile+"': "+err.Error())
-		}
-
-		if len(connectSessionStdoutRaw) > 0 {
-			connectSessionStdoutEmpty = false
-		}
-
-		time.Sleep(500 * time.Millisecond)
-	}
-
-	if connectSessionStdoutEmpty {
-		fancy.Fatalf(globals.UnexpectedErrorMessage, "There is no content on 'connect' stdout command execution")
+	//
+	stdoutFile := globals.BtTemporaryDir + "/" + sessionFileName + ".out"
+	connectSessionStdoutRaw, err := globals.GetFileContents(stdoutFile, true)
+	if err != nil {
+		fancy.Fatalf(globals.UnexpectedErrorMessage, err.Error())
 	}
 
 	//
-	var connectSessionStdout ConnectSessionStdoutT
+	var connectSessionStdout boundary.ConnectSessionStdoutT
 	err = json.Unmarshal(connectSessionStdoutRaw, &connectSessionStdout)
 	if err != nil {
 		fancy.Fatalf(globals.UnexpectedErrorMessage, "Failed converting JSON object into Struct: "+err.Error())
@@ -195,7 +179,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// 4. Show final message to the user
-	durationStringFromNow, err := GetDurationStringFromNow(connectSessionStdout.Expiration)
+	durationStringFromNow, err := globals.GetDurationStringFromNow(connectSessionStdout.Expiration)
 	if err != nil {
 		fancy.Fatalf(globals.UnexpectedErrorMessage, "Error getting session duration: "+err.Error())
 	}
@@ -203,7 +187,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	fancy.Printf(ConnectionSuccessfulMessage,
 		connectSessionStdout.SessionId,
 		durationStringFromNow,
-		"kill -INT "+strconv.Itoa(authorizeSessionCommand.Process.Pid),
+		"kill -INT "+strconv.Itoa(connectCommand.Process.Pid),
 		"pkill -f '^boundary connect'",
 		"kubectl --kubeconfig="+globals.BtTemporaryDir+"/"+connectSessionStdout.SessionId+".yaml get pods")
 }

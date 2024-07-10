@@ -1,33 +1,5 @@
 package kube
 
-// AuthorizeSessionResponseT represents... TODO
-type AuthorizeSessionResponseT struct {
-	StatusCode int `json:"status_code"`
-	Item       struct {
-		SessionId string `json:"session_id"`
-		TargetId  string `json:"target_id"`
-
-		AuthorizationToken string `json:"authorization_token"`
-		Credentials        []struct {
-			Secret struct {
-				Decoded struct {
-					ServiceAccountName      string `json:"service_account_name"`
-					ServiceAccountNamespace string `json:"service_account_namespace"`
-					ServiceAccountToken     string `json:"service_account_token"`
-				} `json:"decoded"`
-			} `json:"secret"`
-		} `json:"credentials"`
-	} `json:"item"`
-}
-
-// TODO
-type ConnectSessionStdoutT struct {
-	Address    string `json:"address"`
-	Expiration string `json:"expiration"`
-	Port       int    `json:"port"`
-	SessionId  string `json:"session_id"`
-}
-
 // TODO
 type KubeconfigClustersT struct {
 	Name    string `yaml:"name"`

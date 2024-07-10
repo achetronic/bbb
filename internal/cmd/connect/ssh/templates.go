@@ -38,7 +38,6 @@ const (
 	{Red}Selected target is not configured as SSH target.
 
 	{Magenta}To connect SSH its needed to have one of the following combinations:
-	* Username & Password
 	* Username & Private Key
 	
 	Contact your H.Boundary administrators and may the force be with you`
