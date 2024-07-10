@@ -2,18 +2,15 @@ package kube
 
 import (
 	"bt/internal/boundary"
+	"bt/internal/fancy"
+	"bt/internal/globals"
 	"bytes"
 	"encoding/json"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 	"os"
-	"os/exec"
 	"strconv"
 	"strings"
-	"syscall"
-
-	"bt/internal/fancy"
-	"bt/internal/globals"
 )
 
 const (
@@ -55,14 +52,11 @@ func RunCommand(cmd *cobra.Command, args []string) {
 		fancy.Fatalf(CommandArgsNoTargetErrorMessage)
 	}
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 1. Ask H.Boundary for an authorized session
 	// This request will provide a session ID and brokered credentials associated to the target
-	boundaryArgs := []string{"targets", "authorize-session", "-id=" + args[0], "-token=" + storedTokenReference, "-format=json"}
-	authorizeSessionCommand := exec.Command("boundary", boundaryArgs...)
-	authorizeSessionCommand.Stdout = &consoleStdout
-	authorizeSessionCommand.Stderr = &consoleStderr
-
-	err = authorizeSessionCommand.Run()
+	// (AuthorizeSession & Connect) are performed in separated steps to check type of target before connecting
+	_, err = boundary.GetTargetAuthorizedSession(storedTokenReference, args[0], &consoleStdout, &consoleStderr)
 	if err != nil {
 		// Brutally fail when there is no output or error to handle anything
 		if len(consoleStderr.Bytes()) == 0 && len(consoleStdout.Bytes()) == 0 {
@@ -101,20 +95,11 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	targetSessionToken := response.Item.AuthorizationToken
 	targetSessionKubernetesSaToken := response.Item.Credentials[credentialsIndex].Secret.Decoded.ServiceAccountToken
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 2. Create a TCP connection to the target with authorized session previously created
 	// User commands will be performed over this connection
-	boundaryArgs = []string{"connect", "-authz-token=" + targetSessionToken, "-token=" + storedTokenReference, "-format=json"}
-	connectCommand := exec.Command("boundary", boundaryArgs...)
-
 	sessionFileName := targetSessionToken[:10]
-	connectCommand.Stdout, _ = os.OpenFile(globals.BtTemporaryDir+"/"+sessionFileName+".out", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0700)
-	connectCommand.Stderr, _ = os.OpenFile(globals.BtTemporaryDir+"/"+sessionFileName+".err", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0700)
-
-	connectCommand.SysProcAttr = &syscall.SysProcAttr{
-		Setsid: true,
-	}
-
-	err = connectCommand.Start()
+	connectCommand, err := boundary.GetSessionConnection(storedTokenReference, targetSessionToken)
 	if err != nil {
 		fancy.Fatalf(globals.UnexpectedErrorMessage,
 			"Failed executing 'boundary connect' command: "+err.Error()+"\nCommand stderr: "+consoleStderr.String())
@@ -134,6 +119,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 		fancy.Fatalf(globals.UnexpectedErrorMessage, "Failed converting JSON object into Struct: "+err.Error())
 	}
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 3. Craft a temporary kubeconfig for this session in a temporary directory,
 	// in a temporary heart, in a temp... oh wait, recursive comment detected
 	kubeconfig := KubeconfigT{
