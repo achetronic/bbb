@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -17,10 +18,10 @@ import (
 )
 
 const (
-	descriptionShort = `TODO` // TODO
-
-	descriptionLong = `TODO` // TODO
-
+	descriptionShort = `Create a connection to a Kubernetes target`
+	descriptionLong  = `
+	Create a connection to a Kubernetes target.
+	It authorizes a session, maintains a TCP proxy connected to H.Boundary, and prepare kubectl to run commands`
 )
 
 func NewCommand() *cobra.Command {
@@ -28,7 +29,7 @@ func NewCommand() *cobra.Command {
 		Use:                   "kube",
 		DisableFlagsInUseLine: true,
 		Short:                 descriptionShort,
-		Long:                  descriptionLong,
+		Long:                  strings.ReplaceAll(descriptionLong, "\t", ""),
 
 		Run: RunCommand,
 	}
