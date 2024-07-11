@@ -37,14 +37,16 @@ Go to the following URL and install it
 
 https://developer.hashicorp.com/boundary/install
 
-> If you are a super expert, just go here and chose a version: 
-> https://releases.hashicorp.com/boundary/
+> If you are a super expert, just [go here and chose a version](https://releases.hashicorp.com/boundary/) 
 
 ### 2. Install BBB
 
-Simply chose a release and download the binary ready for you:
+```console
+curl -s -o /tmp/install.sh https://raw.githubusercontent.com/achetronic/bbb/master/extra/install.sh && bash /tmp/install.sh
+```
 
-https://github.com/achetronic/bbb/releases
+> If you prefer to do it on your own, simply chose a release and download the binary ready for you:
+> https://github.com/achetronic/bbb/releases
 
 
 ### 3. Use BBB CLI
