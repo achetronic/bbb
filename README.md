@@ -57,10 +57,6 @@ bbb auth
 
 ```
 
-### Binaries
-
-Binary files for the most popular platforms will be added to the [releases](https://github.com/achetronic/bbb/releases)
-
 ## How to contribute
 
 We are open to external collaborations for this project: improvements, bugfixes, whatever.
