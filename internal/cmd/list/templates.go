@@ -7,7 +7,7 @@ const (
 	Following tables show the projects belonging to an organization.
 
 	To list the targets inside, you need to list using {Bold}{Cyan}abbreviations{Reset} as follows:
-	{Bold}{White}console ~$ {Green}bt list {Cyan}{abbreviation}`
+	{Bold}{White}console ~$ {Green}bbb list {Cyan}{abbreviation}`
 
 	// TODO
 	ListProjectsCommandHeader = `
@@ -15,8 +15,8 @@ const (
 
 	To connect to a target, you need to connect using {Bold}{Cyan}Target ID{Reset} as follows: 
 	
-	{Bold}{White}console ~$ {Green}bt connect ssh {Cyan}{ttcp_example} {Reset}
-	{Bold}{White}console ~$ {Green}bt connect kube {Cyan}{ttcp_example} {Reset}
+	{Bold}{White}console ~$ {Green}bbb connect ssh {Cyan}{ttcp_example} {Reset}
+	{Bold}{White}console ~$ {Green}bbb connect kube {Cyan}{ttcp_example} {Reset}
 
 	Remember to use {Bold}{Cyan}ssh{Reset} or {Bold}{Cyan}kube{Reset} subcommand
 	depending on the target you are trying to connect to.`

@@ -10,7 +10,7 @@ import (
 const (
 	descriptionShort = `Print the current version`
 	descriptionLong  = `
-	Version show the current bt version client.`
+	Version show the current bbb version client.`
 )
 
 func NewCommand() *cobra.Command {

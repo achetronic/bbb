@@ -7,11 +7,11 @@ import (
 	"time"
 )
 
-var BtTemporaryDir = os.TempDir() + "/bt" // TODO
+var BbbTemporaryDir = os.TempDir() + "/bbb"
 
 // GetStoredToken TODO
 func GetStoredToken() (token string, err error) {
-	fileContent, err := os.ReadFile(BtTemporaryDir + "/BOUNDARY_TOKEN")
+	fileContent, err := os.ReadFile(BbbTemporaryDir + "/BOUNDARY_TOKEN")
 	token = string(fileContent)
 	if token == "" {
 		err = errors.New("no token found")
@@ -23,13 +23,13 @@ func GetStoredToken() (token string, err error) {
 func StoreToken(token string) (err error) {
 
 	//
-	err = os.MkdirAll(BtTemporaryDir, 0700)
+	err = os.MkdirAll(BbbTemporaryDir, 0700)
 	if err != nil {
 		return err
 	}
 
 	//
-	err = os.WriteFile(BtTemporaryDir+"/BOUNDARY_TOKEN", []byte(token), 0700)
+	err = os.WriteFile(BbbTemporaryDir+"/BOUNDARY_TOKEN", []byte(token), 0700)
 	return err
 }
 
@@ -46,7 +46,7 @@ func GetStoredTokenReference() (storedTokenReference string, err error) {
 			return storedTokenReference, err
 		}
 
-		storedTokenReference = "file://" + BtTemporaryDir + "/BOUNDARY_TOKEN"
+		storedTokenReference = "file://" + BbbTemporaryDir + "/BOUNDARY_TOKEN"
 	}
 
 	return storedTokenReference, err

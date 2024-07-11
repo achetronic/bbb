@@ -8,8 +8,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"bt/internal/fancy"
-	"bt/internal/globals"
+	"bbb/internal/fancy"
+	"bbb/internal/globals"
 )
 
 const (

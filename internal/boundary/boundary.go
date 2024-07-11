@@ -1,11 +1,12 @@
 package boundary
 
 import (
-	"bt/internal/globals"
 	"bytes"
 	"os"
 	"os/exec"
 	"syscall"
+
+	"bbb/internal/globals"
 )
 
 // GetTargetAuthorizedSession Ask H.Boundary for an authorized session
@@ -28,8 +29,8 @@ func GetSessionConnection(storedTokenReference, targetSessionToken string) (comm
 	connectCommand := exec.Command("boundary", boundaryArgs...)
 
 	sessionFileName := targetSessionToken[:10]
-	connectCommand.Stdout, _ = os.OpenFile(globals.BtTemporaryDir+"/"+sessionFileName+".out", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0700)
-	connectCommand.Stderr, _ = os.OpenFile(globals.BtTemporaryDir+"/"+sessionFileName+".err", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0700)
+	connectCommand.Stdout, _ = os.OpenFile(globals.BbbTemporaryDir+"/"+sessionFileName+".out", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0700)
+	connectCommand.Stderr, _ = os.OpenFile(globals.BbbTemporaryDir+"/"+sessionFileName+".err", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0700)
 
 	connectCommand.SysProcAttr = &syscall.SysProcAttr{
 		Setsid: true,

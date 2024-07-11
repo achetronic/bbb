@@ -23,12 +23,12 @@ const (
 	{White}Under the hood:
 	{Italic}%s`
 
-	// ConnectionSuccessfulMessage represents the message thrown when everything finished as expected on 'auth' command
+	// AuthSuccessfulMessage represents the message thrown when everything finished as expected on 'auth' command
 	AuthSuccessfulMessage = `
 	{White}You are {Bold}{Cyan}successfully{Reset} authenticated in H.Boundary {Reset}
 
 
 	{White}You are ready to list projects or their targets as follows: {Reset}
-	{Bold}{White}console ~$ {Green}bt list {Reset}
-	{Bold}{White}console ~$ {Green}bt list {Cyan}{abbreviation}{Reset}`
+	{Bold}{White}console ~$ {Green}bbb list {Reset}
+	{Bold}{White}console ~$ {Green}bbb list {Cyan}{abbreviation}{Reset}`
 )

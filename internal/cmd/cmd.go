@@ -1,19 +1,22 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
 	"strings"
 
-	"bt/internal/cmd/auth"
-	"bt/internal/cmd/connect"
-	"bt/internal/cmd/list"
-	"bt/internal/cmd/version"
+	"github.com/spf13/cobra"
+
+	"bbb/internal/cmd/auth"
+	"bbb/internal/cmd/connect"
+	"bbb/internal/cmd/list"
+	"bbb/internal/cmd/version"
 )
 
 const (
-	descriptionShort = `TODO` // TODO
-	descriptionLong  = `TODO` // TODO
-
+	descriptionShort = `A super UX friendly CLI to make daily connections through H.Boundary easy to do`
+	descriptionLong  = `
+	A super UX friendly CLI to make daily connections through H.Boundary easy to do.
+	It covers common auth, targets listing, target connections by SSH, Kubernetes, etc.
+	`
 )
 
 func NewRootCommand(name string) *cobra.Command {

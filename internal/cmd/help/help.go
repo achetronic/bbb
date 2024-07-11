@@ -10,7 +10,7 @@ const (
 
 	descriptionLong = `
 	Help provides help for any command in the application.
-	Simply type bt help [path to command] for full details.`
+	Simply type bbb help [path to command] for full details.`
 )
 
 func NewCommand() *cobra.Command {

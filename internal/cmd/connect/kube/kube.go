@@ -1,16 +1,18 @@
 package kube
 
 import (
-	"bt/internal/boundary"
-	"bt/internal/fancy"
-	"bt/internal/globals"
 	"bytes"
 	"encoding/json"
-	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/spf13/cobra"
+
+	"bbb/internal/boundary"
+	"bbb/internal/fancy"
+	"bbb/internal/globals"
 )
 
 const (
@@ -106,7 +108,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	}
 
 	//
-	stdoutFile := globals.BtTemporaryDir + "/" + sessionFileName + ".out"
+	stdoutFile := globals.BbbTemporaryDir + "/" + sessionFileName + ".out"
 	connectSessionStdoutRaw, err := globals.GetFileContents(stdoutFile, true)
 	if err != nil {
 		fancy.Fatalf(globals.UnexpectedErrorMessage, err.Error())
@@ -159,7 +161,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 		fancy.Fatalf(globals.UnexpectedErrorMessage, "Failed converting kubeconfig object into YAML: "+err.Error())
 	}
 
-	err = os.WriteFile(globals.BtTemporaryDir+"/"+connectSessionStdout.SessionId+".yaml", kubeconfigContent, 0700)
+	err = os.WriteFile(globals.BbbTemporaryDir+"/"+connectSessionStdout.SessionId+".yaml", kubeconfigContent, 0700)
 	if err != nil {
 		fancy.Fatalf(globals.UnexpectedErrorMessage, "Failed writing kubeconfig YAML in temporary directory: "+err.Error())
 	}
@@ -175,5 +177,5 @@ func RunCommand(cmd *cobra.Command, args []string) {
 		durationStringFromNow,
 		"kill -INT "+strconv.Itoa(connectCommand.Process.Pid),
 		"pkill -f '^boundary connect'",
-		"kubectl --kubeconfig="+globals.BtTemporaryDir+"/"+connectSessionStdout.SessionId+".yaml get pods")
+		"kubectl --kubeconfig="+globals.BbbTemporaryDir+"/"+connectSessionStdout.SessionId+".yaml get pods")
 }

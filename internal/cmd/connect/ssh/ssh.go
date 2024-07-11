@@ -1,18 +1,20 @@
 package ssh
 
 import (
-	"bt/internal/boundary"
-	"bt/internal/cmd/connect/kube"
-	"bt/internal/fancy"
-	"bt/internal/globals"
 	"bytes"
 	"encoding/json"
-	"github.com/spf13/cobra"
 	"log"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
+
+	"github.com/spf13/cobra"
+
+	"bbb/internal/boundary"
+	"bbb/internal/cmd/connect/kube"
+	"bbb/internal/fancy"
+	"bbb/internal/globals"
 )
 
 const (
@@ -107,7 +109,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	}
 
 	//
-	stdoutFile := globals.BtTemporaryDir + "/" + sessionFileName + ".out"
+	stdoutFile := globals.BbbTemporaryDir + "/" + sessionFileName + ".out"
 	connectSessionStdoutRaw, err := globals.GetFileContents(stdoutFile, true)
 	if err != nil {
 		fancy.Fatalf(globals.UnexpectedErrorMessage, err.Error())
@@ -127,7 +129,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	targetSessionSshPrivateKey := response.Item.Credentials[credentialsIndex].Credential.PrivateKey
 
 	// Write PrivateKey in a temporary file to be used by SSH binary
-	temporaryPrivatekeyFile := globals.BtTemporaryDir + "/" + sessionFileName + ".pem"
+	temporaryPrivatekeyFile := globals.BbbTemporaryDir + "/" + sessionFileName + ".pem"
 	err = os.WriteFile(temporaryPrivatekeyFile, []byte(targetSessionSshPrivateKey+"\n"), 0600)
 	if err != nil {
 		log.Print(err.Error())

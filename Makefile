@@ -61,7 +61,7 @@ lint-fix: golangci-lint ## Run golangci-lint linter and perform fixes
 
 .PHONY: build
 build: fmt vet ## Build CLI binary.
-	go build -o bin/bt cmd/main.go
+	go build -o bin/bbb cmd/main.go
 
 .PHONY: run
 run: fmt vet ## Run a CLI from your host.
@@ -72,7 +72,7 @@ PACKAGE_NAME ?= package.tar.gz
 package: build ## Package binary.
 	@printf "\nCreating package at dist/$(PACKAGE_NAME) \n"
 	@mkdir -p dist
-	tar -cvzf dist/$(PACKAGE_NAME) -C bin bt -C ../ LICENSE README.md
+	tar -cvzf dist/$(PACKAGE_NAME) -C bin bbb -C ../ LICENSE README.md
 
 .PHONY: package-signature
 package-signature: ## Create a signature for the package.

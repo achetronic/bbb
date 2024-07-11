@@ -1,7 +1,4 @@
-# Ref: https://developer.hashicorp.com/boundary/install
-
-
-# BT (Boundary Tools)
+# BBB (Boundary But Better)
 
 ![GitHub go.mod Go version (subdirectory of monorepo)](https://img.shields.io/github/go-mod/go-version/freepik-company/bgos)
 ![GitHub](https://img.shields.io/github/license/freepik-company/bgos)
@@ -10,74 +7,59 @@
 ![GitHub followers](https://img.shields.io/github/followers/achetronic?label=achetronic&link=http%3A%2F%2Fgithub.com%2Fachetronic)
 ![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/achetronic?style=flat&logo=twitter&link=https%3A%2F%2Ftwitter.com%2Fachetronic)
 
-A super specific process to 
+A super UX friendly CLI to make daily connections through H.Boundary easy to do.
+
+It covers common auth, targets listing, target connections by SSH, Kubernetes, etc 
 
 ## Motivation
 
-Boundary is...
+Original H.Boundary CLI is designed to manage every administration aspect of Boundary (even the hardest ones),
+but its usage is not friendly, and some flows are even bugged. This makes original CLI not usable on a daily basis.
 
-## Flags
-
-Every configuration parameter can be defined by flags that can be passed to the CLI.
-They are described in the following table:
-
-| Name                           | Description                                                           |      Default      | Example                                           |
-|:-------------------------------|:----------------------------------------------------------------------|:-----------------:|---------------------------------------------------|
-| `--log-level`                  | Define the verbosity of the logs                                      |      `info`       | `--log-level info`                                |
-| `--disable-trace`              | Disable traces from logs                                              |      `false`      | `--disable-trace true`                            |
-| `--google-sa-credentials-path` | Google ServiceAccount credentials JSON file path                      |   `google.json`   | `--google-sa-credentials-path="~/something.json"` |   
-| `--sync-time`                  | Waiting time between group synchronizations (in duration type)        |       `10m`       | `--sync-time 5m`                                  |
-| `--google-group`               | (Repeatable or comma-separated list) G.Workspace groups               |        `-`        | `--google-group group1@company.com`               |
-| `--boundary-oidc-id`           | Boundary oidc auth method ID to compare its users against G.Workspace | `amoidc_changeme` | `--boundary-oidc-id "amoidc_example"`             |
-| `--boundary-scope-id`          | Boundary scope ID where the users and groups are synchronized         |     `global`      | `--boundary-scope-id "global"`                    |
+This CLI wraps original CLI, fixing things such as UX and bugs on top of Boundary CLI, empowering people to use Boundary
+in an easy and reliable way.
 
 ## Environment Variables
 
-Security-critical parameters are managed by environment variables.
+Only few parameters are managed by environment variables.
 They are described in the following table:
 
-| Name                           | Description                                                       | Default | Example                                  |
-|:-------------------------------|:------------------------------------------------------------------|:-------:|------------------------------------------|
-| `BOUNDARY_ADDR`                | Address where your Boundary instance is hosted                    |   `-`   | `https://hashicorp-boundary.company.com` |
-| `BOUNDARY_AUTHMETHODPASS_ID`   | ID of boundary auth method where the privileged user is stored    |   `-`   | `ampw_example`                           |
-| `BOUNDARY_AUTHMETHODPASS_USER` | Username of boundary privileged user that perform synchronization |   `-`   | `user_example_changeit`                  |
-| `BOUNDARY_AUTHMETHODPASS_PASS` | Password of boundary privileged user that perform synchronization |   `-`   | `super_secure_password`                  |
+| Name                           | Description                                      | Default | Example                                  |
+|:-------------------------------|:-------------------------------------------------|:-------:|------------------------------------------|
+| `BOUNDARY_ADDR`                | Address where your H.Boundary instance is hosted |   `-`   | `https://hashicorp-boundary.company.com` |
 
-## Examples
 
-Here you have a complete example to use this command.
+## Quickstart
 
-> Output is thrown always in JSON as it is more suitable for automations
+### 1. Install Hashicorp Boundary in your system
+
+Go to the following URL and install it
+
+https://developer.hashicorp.com/boundary/install
+
+> If you are a super expert, just go here and chose a version: 
+> https://releases.hashicorp.com/boundary/
+
+### 2. Install BBB
+
+Simply chose a release and download the binary ready for you:
+
+https://github.com/achetronic/bbb/releases
+
+
+### 3. Use BBB CLI
 
 ```console
 
 export BOUNDARY_ADDR="https://your-boundary.you-company.com/"
-export BOUNDARY_AUTHMETHODPASS_ID="ampw_example"
-export BOUNDARY_AUTHMETHODPASS_USER="automation-google-workspace-groups-syncer" 
-export BOUNDARY_AUTHMETHODPASS_PASS='super_secure_password'
 
-bgos run \
-     --log-level=info \
-     --google-sa-credentials-path=le_credentials.json \
-     --google-group sre@your-company.com \
-     --google-group developers@your-company.com
+bbb auth
+
 ```
-
-## How to use
-
-This project provides binary files and Docker images to make it easy to use wherever wanted
 
 ### Binaries
 
-Binary files for the most popular platforms will be added to the [releases](https://github.com/freepik-company/bgos/releases)
-
-### Docker
-
-Docker images can be found in GitHub's [packages](https://github.com/freepik-company/bgos/pkgs/container/bgos)
-related to this repository
-
-> Do you need it in a different container registry? We think this is not needed, but if we're wrong, please, let's discuss
-> it in the best place for that: an issue
+Binary files for the most popular platforms will be added to the [releases](https://github.com/achetronic/bbb/releases)
 
 ## How to contribute
 

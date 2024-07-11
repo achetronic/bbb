@@ -1,11 +1,12 @@
 package connect
 
 import (
-	"github.com/spf13/cobra"
 	"strings"
 
-	"bt/internal/cmd/connect/kube"
-	"bt/internal/cmd/connect/ssh"
+	"github.com/spf13/cobra"
+
+	"bbb/internal/cmd/connect/kube"
+	"bbb/internal/cmd/connect/ssh"
 )
 
 const (
