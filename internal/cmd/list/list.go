@@ -13,10 +13,9 @@ import (
 )
 
 const (
-	descriptionShort = `TODO` // TODO
-
-	descriptionLong = `TODO` // TODO
-
+	descriptionShort = `List organizations' projects and their targets`
+	descriptionLong  = `
+	List organizations' projects and their targets.`
 )
 
 func NewCommand() *cobra.Command {
@@ -24,7 +23,7 @@ func NewCommand() *cobra.Command {
 		Use:                   "list",
 		DisableFlagsInUseLine: true,
 		Short:                 descriptionShort,
-		Long:                  descriptionLong,
+		Long:                  strings.ReplaceAll(descriptionLong, "\t", ""),
 
 		Run: RunCommand,
 	}

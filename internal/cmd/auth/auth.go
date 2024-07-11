@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"os/exec"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -12,16 +13,16 @@ import (
 )
 
 const (
-	descriptionShort = `TODO`
-
-	descriptionLong = `TODO`
+	descriptionShort = `Authenticate against H.Boundary using OIDC`
+	descriptionLong  = `
+	Authenticate against H.Boundary using OIDC.`
 )
 
 func NewCommand() *cobra.Command {
 	c := &cobra.Command{
 		Use:   "auth",
 		Short: descriptionShort,
-		Long:  descriptionLong,
+		Long:  strings.ReplaceAll(descriptionLong, "\t", ""),
 
 		Run: RunCommand,
 	}

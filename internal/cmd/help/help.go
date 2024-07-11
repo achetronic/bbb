@@ -2,6 +2,7 @@ package help
 
 import (
 	"github.com/spf13/cobra"
+	"strings"
 )
 
 const (
@@ -17,7 +18,7 @@ func NewCommand() *cobra.Command {
 		Use:                   "help [command] | STRING_TO_SEARCH",
 		DisableFlagsInUseLine: true,
 		Short:                 descriptionShort,
-		Long:                  descriptionLong,
+		Long:                  strings.ReplaceAll(descriptionLong, "\t", ""),
 
 		Run: RunCommand,
 	}

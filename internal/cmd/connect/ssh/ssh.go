@@ -17,8 +17,7 @@ import (
 
 const (
 	descriptionShort = `Create a connection to an SSH target`
-
-	descriptionLong = `
+	descriptionLong  = `
 	Create a connection to an SSH target.
 	It authorizes a session, and performs SSH connection using it`
 )

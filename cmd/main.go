@@ -10,7 +10,7 @@ import (
 
 func checkEnv() (err error) {
 	os.Setenv("BOUNDARY_ADDR", "https://hashicorp-boundary.fpkmon.com")
-	
+
 	boundaryAddress := os.Getenv("BOUNDARY_ADDR")
 
 	if boundaryAddress == "" {

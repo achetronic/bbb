@@ -1,19 +1,10 @@
 
-# Image URL to use all building/pushing image targets
-IMG ?= controller:latest
-
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
 GOBIN=$(shell go env GOPATH)/bin
 else
 GOBIN=$(shell go env GOBIN)
 endif
-
-# CONTAINER_TOOL defines the container tool to be used for building images.
-# Be aware that the target commands are only tested with Docker which is
-# scaffolded by default. However, you might want to replace it to use other
-# tools. (i.e. podman)
-CONTAINER_TOOL ?= docker
 
 # Setting SHELL to bash allows bash commands to be executed by recipes.
 # Options are set to exit when a recipe line exits non-zero or a piped command fails.
@@ -69,9 +60,21 @@ lint-fix: golangci-lint ## Run golangci-lint linter and perform fixes
 ##@ Build
 
 .PHONY: build
-build: fmt vet ## Build manager binary.
-	go build -o bin/bgos cmd/main.go
+build: fmt vet ## Build CLI binary.
+	go build -o bin/bt cmd/main.go
 
 .PHONY: run
-run: fmt vet ## Run a controller from your host.
+run: fmt vet ## Run a CLI from your host.
 	go run ./cmd/main.go
+
+PACKAGE_NAME ?= package.tar.gz
+.PHONY: package
+package: build ## Package binary.
+	@printf "\nCreating package at dist/$(PACKAGE_NAME) \n"
+	@mkdir -p dist
+	tar -cvzf dist/$(PACKAGE_NAME) -C bin bt -C ../ LICENSE README.md
+
+.PHONY: package-signature
+package-signature: ## Create a signature for the package.
+	@printf "\nCreating package signature at dist/$(PACKAGE_NAME).md5 \n"
+	md5sum dist/$(PACKAGE_NAME) | awk '{ print $$1 }' > dist/$(PACKAGE_NAME).md5

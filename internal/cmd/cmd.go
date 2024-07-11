@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+	"strings"
 
 	"bt/internal/cmd/auth"
 	"bt/internal/cmd/connect"
@@ -11,16 +12,15 @@ import (
 
 const (
 	descriptionShort = `TODO` // TODO
+	descriptionLong  = `TODO` // TODO
 
-	// descriptionLong TODO
-	descriptionLong = `TODO` // TODO
 )
 
 func NewRootCommand(name string) *cobra.Command {
 	c := &cobra.Command{
 		Use:   name,
 		Short: descriptionShort,
-		Long:  descriptionLong,
+		Long:  strings.ReplaceAll(descriptionLong, "\t", ""),
 	}
 
 	c.AddCommand(
