@@ -67,7 +67,9 @@ jobs:
 
       - name: "Craft package and its signature"
         id: build_package
-        run: |          
+        run: |
+          export GOOS=${{ matrix.goos }}
+          export GOARCH=${{ matrix.goarch }}
           export PACKAGE_NAME=bbb-${{ steps.read_tag.outputs.release_tag }}-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
           
           make package

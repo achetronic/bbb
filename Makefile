@@ -59,9 +59,20 @@ lint-fix: golangci-lint ## Run golangci-lint linter and perform fixes
 
 ##@ Build
 
+.PHONY: check-go-target
+check-go-target: ## Check presente of GOOS and GOARCH vars.
+	@if [ -z "$(GOOS)" ]; then \
+		echo "GOOS is not defined. Define GOOS y try again."; \
+		exit 1; \
+	fi
+	@if [ -z "$(GOARCH)" ]; then \
+		echo "GOARCH is not defined. Define GOARCH y try again."; \
+		exit 1; \
+	fi
+
 .PHONY: build
-build: fmt vet ## Build CLI binary.
-	go build -o bin/bbb cmd/main.go
+build: fmt vet check-go-target ## Build CLI binary.
+	go build -o bin/bbb-$(GOOS)-$(GOARCH) cmd/main.go
 
 .PHONY: run
 run: fmt vet ## Run a CLI from your host.
@@ -72,7 +83,7 @@ PACKAGE_NAME ?= package.tar.gz
 package: build ## Package binary.
 	@printf "\nCreating package at dist/$(PACKAGE_NAME) \n"
 	@mkdir -p dist
-	tar -cvzf dist/$(PACKAGE_NAME) -C bin bbb -C ../ LICENSE README.md
+	tar -cvzf dist/$(PACKAGE_NAME) -C bin bbb-$(GOOS)-$(GOARCH) -C ../ LICENSE README.md
 
 .PHONY: package-signature
 package-signature: ## Create a signature for the package.
