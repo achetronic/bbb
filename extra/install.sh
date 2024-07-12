@@ -9,9 +9,6 @@ binary_name="${repo_name}"
 os=$(uname | tr '[:upper:]' '[:lower:]')
 arch=$(uname -m)
 
-os="darwin"
-arch="arm64"
-
 # Convert architecture name to the format used in the releases
 case $arch in
     x86_64)
