@@ -9,6 +9,9 @@ binary_name="${repo_name}"
 os=$(uname | tr '[:upper:]' '[:lower:]')
 arch=$(uname -m)
 
+os="darwin"
+arch="arm64"
+
 # Convert architecture name to the format used in the releases
 case $arch in
     x86_64)
@@ -34,7 +37,7 @@ esac
 # https://github.com/$repo_owner/$repo_name/releases/latest/download/bbb-v0.1.0-linux-amd64.tar.gz
 echo "Looking for the proper package for your system"
 download_url=$(curl -s https://api.github.com/repos/$repo_owner/$repo_name/releases/latest | \
-	grep -oP "https://.+?${repo_name}-v\d+\.\d+\.\d+-${os}-${arch}\.tar\.gz" | \
+	grep -oE "https://.+?${repo_name}-v[0-9]+\.[0-9]+\.[0-9]+-${os}-${arch}\.tar\.gz" | \
 	head -n 1)
 
 if [ -z "$download_url" ]; then
