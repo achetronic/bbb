@@ -1,5 +1,7 @@
 # BBB (Boundary But Better)
 
+<img src="https://raw.githubusercontent.com/achetronic/bbb/master/docs/img/logo-medium.png" alt="BBB (Main) logo." width="150">
+
 ![GitHub go.mod Go version (subdirectory of monorepo)](https://img.shields.io/github/go-mod/go-version/freepik-company/bgos)
 ![GitHub](https://img.shields.io/github/license/freepik-company/bgos)
 
@@ -10,6 +12,8 @@
 A super UX friendly CLI to make daily connections through H.Boundary easy to do.
 
 It covers common auth, targets listing, target connections by SSH, Kubernetes, etc 
+
+<img src="https://raw.githubusercontent.com/achetronic/bbb/master/docs/img/command-main.png" alt="BBB (Main) logo." width="750">
 
 ## Motivation
 
@@ -33,30 +37,33 @@ They are described in the following table:
 
 ### 1. Install Hashicorp Boundary in your system
 
-Go to the following URL and install it
+Go to the [official installation docs](https://developer.hashicorp.com/boundary/install) and install it. 
+If you are a super expert, just [go to releases and chose a version](https://releases.hashicorp.com/boundary/)
 
-https://developer.hashicorp.com/boundary/install
-
-> If you are a super expert, just [go here and chose a version](https://releases.hashicorp.com/boundary/) 
+Don't worry, because BBB is able to detect if you have Boundary CLI installed (🧙‍♂️ **MAGIC**) and give you a direct link 
+for downloading the most suitable package for your system.
 
 ### 2. Install BBB
+
+We have prepared a one-liner installation script that detects your system and install the most suitable version for you.
+Just copy the next command and execute it on your terminal
 
 ```console
 curl -s -o /tmp/install.sh https://raw.githubusercontent.com/achetronic/bbb/master/extra/install.sh && bash /tmp/install.sh
 ```
 
-> If you prefer to do it on your own, simply chose a release and download the binary ready for you:
-> https://github.com/achetronic/bbb/releases
+If you prefer to download the binary on your own, simply 
+[chose a binary on releases](https://github.com/achetronic/bbb/releases) page and download it
 
 
 ### 3. Use BBB CLI
 
 ```console
-
+# Hey! Remember to point to your H.Boundary controller
 export BOUNDARY_ADDR="https://your-boundary.you-company.com/"
 
-bbb auth
 
+bbb auth
 ```
 
 ## How to contribute
