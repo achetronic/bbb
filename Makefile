@@ -6,6 +6,8 @@ else
 GOBIN=$(shell go env GOBIN)
 endif
 
+OS=$(shell uname | tr '[:upper:]' '[:lower:]')
+
 # Setting SHELL to bash allows bash commands to be executed by recipes.
 # Options are set to exit when a recipe line exits non-zero or a piped command fails.
 SHELL = /usr/bin/env bash -o pipefail
@@ -80,10 +82,18 @@ run: fmt vet ## Run a CLI from your host.
 
 PACKAGE_NAME ?= package.tar.gz
 .PHONY: package
-package: build ## Package binary.
+package: check-go-target ## Package binary.
 	@printf "\nCreating package at dist/$(PACKAGE_NAME) \n"
 	@mkdir -p dist
-	tar -cvzf dist/$(PACKAGE_NAME) -C bin bbb-$(GOOS)-$(GOARCH) -C ../ LICENSE README.md
+
+	@if [ "$(OS)" = "linux" ]; then \
+		tar --transform="s/bbb-$(GOOS)-$(GOARCH)/bbb/" -cvzf dist/$(PACKAGE_NAME) -C bin bbb-$(GOOS)-$(GOARCH) -C ../ LICENSE README.md; \
+	elif [ "$(OS)" = "darwin" ]; then \
+		tar -cvzf dist/$(PACKAGE_NAME) -s '/bbb-$(GOOS)-$(GOARCH)/bbb/' -C bin bbb-$(GOOS)-$(GOARCH) -C ../ LICENSE README.md; \
+	else \
+		echo "Unsupported OS: $(GOOS)"; \
+		exit 1; \
+	fi
 
 .PHONY: package-signature
 package-signature: ## Create a signature for the package.
