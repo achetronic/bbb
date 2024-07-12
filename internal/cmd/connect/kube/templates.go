@@ -1,6 +1,23 @@
 package kube
 
 const (
+	KubectlCliNotFoundErrorMessage = `
+	{Red}Kubectl CLI is not detected on your system.
+
+	{Magenta}Well, this is a bit... unexpected. Unexpected because if you are trying to connect to Kubernetes,
+	you are probably an expert, but that 'expert' {Cyan}COMPLETELY forgot to install kubectl!!{Magenta} 
+	So you may be a {Cyan}noob{Magenta}, or just a crazy guy. 
+
+	In both cases I can do something for you.
+
+	How to pronounce 'kubectl': https://www.youtube.com/watch?v=2wgAIvXpJqU
+	Some courses for you: https://www.youtube.com/achetronic
+
+	{White}It is possible to remediate this issue installing it from:
+
+	{White}Pretty way: {Reset}{Cyan}Use your OS package manager
+	{White}Experts website: {Reset}{Cyan}https://kubernetes.io/docs/tasks/tools/#kubectl
+	`
 
 	// CommandArgsNoTargetErrorMessage is the message thrown when the user is trying to establish a connection
 	// without defining a target

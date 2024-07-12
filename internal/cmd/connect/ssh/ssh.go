@@ -12,7 +12,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"bbb/internal/boundary"
-	"bbb/internal/cmd/connect/kube"
 	"bbb/internal/fancy"
 	"bbb/internal/globals"
 )
@@ -53,7 +52,12 @@ func RunCommand(cmd *cobra.Command, args []string) {
 
 	// We need a target to connect to
 	if len(args) != 1 {
-		fancy.Fatalf(kube.CommandArgsNoTargetErrorMessage)
+		fancy.Fatalf(CommandArgsNoTargetErrorMessage)
+	}
+
+	_, err = exec.LookPath("ssh")
+	if err != nil {
+		fancy.Fatalf(SshCliNotFoundErrorMessage)
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

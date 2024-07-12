@@ -1,6 +1,17 @@
 package ssh
 
 const (
+	SshCliNotFoundErrorMessage = `
+	{Red}SSH CLI is not detected on your system.
+
+	{Magenta}How do you expect to connect by SSH without having SSH CLI in your system? 
+	I'm not an expert... but flying without wings is a bit... difficult *cough, cough*
+
+	{White}It is possible to remediate this issue installing it from:
+
+	{White}Pretty way: {Reset}{Cyan}Use your OS package manager
+	{White}Experts website: {Reset}{Cyan}https://cloudflare.cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/
+	`
 
 	// CommandArgsNoTargetErrorMessage is the message thrown when the user is trying to establish a connection
 	// without defining a target
@@ -8,7 +19,7 @@ const (
 	{Red}Impossible to get target ID from arguments.
 
 	{White}To connect to a target, you need to connect using {Cyan}Target ID {White}as follows:
-	{Bold}{White}console ~$ {Green}bbb connect kube {Cyan}{ttcp_example}`
+	{Bold}{White}console ~$ {Green}bbb connect ssh {Cyan}{ttcp_example}`
 
 	// AuthorizeSessionErrorMessage message is thrown when there is an error different from 4xx on authorize-session
 	// command execution

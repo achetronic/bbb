@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"gopkg.in/yaml.v3"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 
@@ -52,6 +53,11 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	// We need a target to connect to
 	if len(args) != 1 {
 		fancy.Fatalf(CommandArgsNoTargetErrorMessage)
+	}
+
+	_, err = exec.LookPath("kubectl")
+	if err != nil {
+		fancy.Fatalf(KubectlCliNotFoundErrorMessage)
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
