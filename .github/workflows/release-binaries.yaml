@@ -58,7 +58,7 @@ jobs:
       - name: "Build binary"
         id: build_binary
         run: |
-          printf "GOOS: %s, GOARCH: %s\n" "${GOOS}" "${GOARCH}"
+          printf "GOOS: %s, GOARCH: %s\n" "${{ matrix.goos }}" "${{ matrix.goarch }}"
           
           export GOOS=${{ matrix.goos }}
           export GOARCH=${{ matrix.goarch }}
