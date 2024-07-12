@@ -17,6 +17,9 @@ case $arch in
     aarch64)
         arch="arm64"
         ;;
+    arm64)
+        arch="arm64"
+        ;;
     i386)
         arch="386"
         ;;
