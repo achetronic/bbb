@@ -240,8 +240,11 @@ printf "\n\n\n"
 printf "${BPurple}2. INSTALL BINARY ${Color_Off}\n\n"
 
 # Assuming the tarball contains a binary with the same name as the repository
-printf "${White}* Installing the binary on your system${Color_Off}"
+printf "${White}* Installing the binary on your system${Color_Off}\n"
+
+printf "${Green}"
 sudo install -m 0755 $binary_name /usr/local/bin/
+printf "${Color_Off}"
 
 
 
