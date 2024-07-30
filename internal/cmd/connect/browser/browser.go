@@ -169,8 +169,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 		authHeader = "Basic " + base64.StdEncoding.EncodeToString([]byte(
 			response.Item.Credentials[credentialsIndex].Credential.Username+":"+response.Item.Credentials[credentialsIndex].Credential.Password))
 	} else if authenticationMethod == "bearer" {
-		authHeader = "Basic " + base64.StdEncoding.EncodeToString([]byte(
-			response.Item.Credentials[credentialsIndex].Credential.Password))
+		authHeader = "Bearer " + response.Item.Credentials[credentialsIndex].Credential.Password
 	} else {
 		fancy.Fatalf(globals.UnexpectedErrorMessage,
 			"Unknown authentication method: "+authenticationMethod)
