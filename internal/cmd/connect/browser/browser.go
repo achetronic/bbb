@@ -70,9 +70,20 @@ func RunCommand(cmd *cobra.Command, args []string) {
 		fancy.Fatalf(CommandArgsNoTargetErrorMessage)
 	}
 
-	_, err = exec.LookPath("xdg-open")
+	var browserCli string
+	switch runtime.GOOS {
+	case "darwin":
+		browserCli = "open"
+	case "linux":
+		browserCli = "xdg-open"
+	default:
+		fancy.Fatalf(globals.UnexpectedErrorMessage,
+			"Usupported SO, we don't know which command to use to open the browser")
+	}
+
+	_, err = exec.LookPath(browserCli)
 	if err != nil {
-		fancy.Fatalf(XdgOpenCliNotFoundErrorMessage)
+		fancy.Fatalf(BrowserCliNotFoundErrorMessage)
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -213,16 +224,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	// 4. Open browser to the webserver created in step 3
 	// We use xdg-open or open command for Linux and MacOS systems respectively
 	sourceWebserverAddress := "http://" + sourceProxyAddress
-	var browserCommand *exec.Cmd
-	switch runtime.GOOS {
-	case "darwin":
-		browserCommand = exec.Command("open", sourceWebserverAddress)
-	case "linux":
-		browserCommand = exec.Command("xdg-open", sourceWebserverAddress)
-	default:
-		fancy.Fatalf(globals.UnexpectedErrorMessage,
-			"Usupported SO, we don't know which command to use to open the browser")
-	}
+	browserCommand := exec.Command(browserCli, sourceWebserverAddress)
 	fmt.Println("Opening browser: ", browserCommand)
 	err = browserCommand.Run()
 

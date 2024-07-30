@@ -1,17 +1,16 @@
 package browser
 
 const (
-	XdgOpenCliNotFoundErrorMessage = `
-	{Red}xdg-open is not detected on your system.
+	BrowserCliNotFoundErrorMessage = `
+	{Red}A browser CLI is not detected on your system.
 
-	{Magenta}How do you expect to connect by SSH without having SSH CLI in your system? 
-	I'm not an expert... but flying without wings is a bit... difficult *cough, cough*
+	{Magenta}How do you expect to use a Browser connection without having a CLI in your system? 
+	C'mon everybody has xdg-open or open in their systems, are you using a toaster?
 
 	{White}It is possible to remediate this issue installing it from:
 
-	{White}Pretty way: {Reset}{Cyan}Use your OS package manager
-	{White}Experts website: {Reset}{Cyan}https://cloudflare.cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/
-	`
+	{White}For Linux users: {Reset}{Cyan}apt install xdg-utils
+	{White}For MacOS users: {Reset}{Cyan}Nah I don't belive you, you already have it`
 
 	// CommandArgsNoTargetErrorMessage is the message thrown when the user is trying to establish a connection
 	// without defining a target
