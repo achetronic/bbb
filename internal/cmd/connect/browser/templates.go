@@ -2,14 +2,14 @@ package browser
 
 const (
 	BrowserCliNotFoundErrorMessage = `
-	{Red}A browser CLI is not detected on your system.
+	{Red}A browser opener CLI is not detected on your system.
 
 	{Magenta}How do you expect to use a Browser connection without having a CLI in your system? 
 	C'mon everybody has xdg-open or open in their systems, are you using a toaster?
 
 	{White}It is possible to remediate this issue installing it from:
 
-	{White}For Linux users: {Reset}{Cyan}apt install xdg-utils
+	{White}For Linux users: {Reset}{Cyan}Use your package manager and install 'xdg-utils'
 	{White}For MacOS users: {Reset}{Cyan}Nah I don't belive you, you already have it`
 
 	// CommandArgsNoTargetErrorMessage is the message thrown when the user is trying to establish a connection
@@ -48,7 +48,8 @@ const (
 	{Red}Selected target is not configured as Browser target.
 
 	{Magenta}To connect Browser its needed to have one of the following combinations:
-	* Username & Password or Password
+	* Username & Password to use basic authentication
+	* Password to use bearer authentication
 	
 	Contact your H.Boundary administrators and may the force be with you`
 )

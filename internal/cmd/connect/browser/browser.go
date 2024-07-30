@@ -3,10 +3,8 @@ package browser
 import (
 	"bytes"
 	"crypto/tls"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -30,10 +28,14 @@ const (
 	descriptionLong  = `
 	Create a connection to a Browser target.
 	It authorizes a session, and opens a Browser using it`
+
+	//
+	webserverPortRangeMin = 10000
+	webserverPortRangeMax = 11000
 )
 
 var (
-	insecure bool
+	insecureFlag bool
 )
 
 func NewCommand() *cobra.Command {
@@ -46,7 +48,7 @@ func NewCommand() *cobra.Command {
 		Run: RunCommand,
 	}
 
-	cmd.Flags().BoolVar(&insecure, "insecure", false, "Creates the local webserver without SSL/TLS")
+	cmd.Flags().BoolVar(&insecureFlag, "insecure", false, "Creates the local webserver without SSL/TLS")
 
 	return cmd
 }
@@ -114,16 +116,11 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// Check brokered credentials to guess whether requested target is configured as Browser target
-	// Also checks if the authentication header is with username and password or with bearer token
+	// Only checking password as it is mandatory for all types of authentication. Username is checked later
 	credentialsIndex := -1
 	var authenticationMethod string
 	for credentialIndex, credential := range response.Item.Credentials {
 		if credential.Credential.Password != "" {
-			if credential.Credential.Username != "" {
-				authenticationMethod = "basic"
-			} else {
-				authenticationMethod = "bearer"
-			}
 			credentialsIndex = credentialIndex
 		}
 	}
@@ -163,66 +160,62 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	// 3. Create a webserver to inject Authorization Header from Username and Password retrieved from H.Boundary
 	// It is needed so xdg-open/open can not inject headers by itself
 
-	// Retrieve target session credentials and creates authorization header
-	var authHeader string
-	if authenticationMethod == "basic" {
-		authHeader = "Basic " + base64.StdEncoding.EncodeToString([]byte(
-			response.Item.Credentials[credentialsIndex].Credential.Username+":"+response.Item.Credentials[credentialsIndex].Credential.Password))
-	} else if authenticationMethod == "bearer" {
-		authHeader = "Bearer " + response.Item.Credentials[credentialsIndex].Credential.Password
-	} else {
+	// #### FIXME: Assume bearer authentication as password must always be present
+	// Assume basic auth when username is also present
+	var headerAuthUsername string
+
+	authenticationMethod = "bearer"
+	if response.Item.Credentials[credentialsIndex].Credential.Username != "" {
+		authenticationMethod = "basic"
+		headerAuthUsername = response.Item.Credentials[credentialsIndex].Credential.Username
+	}
+
+	authHeader, err := GetAuthHeaderValue(
+		headerAuthUsername,
+		response.Item.Credentials[credentialsIndex].Credential.Password,
+		authenticationMethod)
+	if err != nil {
 		fancy.Fatalf(globals.UnexpectedErrorMessage,
-			"Unknown authentication method: "+authenticationMethod)
+			"Failed crafting authorization header: "+err.Error())
 	}
 
-	// Define the source proxy port randomnly between minPort and maxPort
-	minPort := 10900
-	maxPort := 11000
-	sourcePort := rand.Intn(maxPort-minPort+1) + minPort
+	// Define the local webserver proxy address
+	webserverPort := GetFreeRandomPort(webserverPortRangeMin, webserverPortRangeMax)
+	webserverAddress := fmt.Sprintf("127.0.0.1:%d", webserverPort)
 
-	// Define the URL of the source proxy where the browser will be opened
-	sourceProxyAddress := fmt.Sprintf("127.0.0.1:%d", sourcePort)
-
-	// Define the URL of the target to which the proxy_pass will be made
-	targetProxyProtocol := "https"
-	if insecure {
-		targetProxyProtocol = "http"
+	// Define the URL of the target where the local webserver will attack
+	targetScheme := "https"
+	if insecureFlag {
+		targetScheme = "http"
 	}
-	targetProxyAddress, err := url.Parse(fmt.Sprintf("%s://127.0.0.1:%d", targetProxyProtocol, connectSessionStdout.Port))
+	targetProxyAddress, err := url.Parse(fmt.Sprintf("%s://127.0.0.1:%d", targetScheme, connectSessionStdout.Port))
 	if err != nil {
 		fancy.Fatalf(globals.UnexpectedErrorMessage,
 			"Failed parsing target URL: "+err.Error())
 	}
 
-	// Create the reverse proxy
-	proxy := httputil.NewSingleHostReverseProxy(targetProxyAddress)
-	proxy.Transport = &http.Transport{
+	// Create and start the webserver
+	webserver := httputil.NewSingleHostReverseProxy(targetProxyAddress)
+	webserver.Transport = &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
-	// Configure the webserver
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-
-		// Authroization header creation in Basic format
 		r.Header.Set("Authorization", authHeader)
-
-		// Redirect the request to the target server
-		proxy.ServeHTTP(w, r)
+		webserver.ServeHTTP(w, r)
 	})
 
-	// Start the webserver in a goroutine
 	go func() {
-		err := http.ListenAndServe(sourceProxyAddress, nil)
+		err := http.ListenAndServe(webserverAddress, nil)
 		if err != nil {
-			fancy.Fatalf(globals.UnexpectedErrorMessage,
-				"Error creating local webserver: "+err.Error())
+			fancy.Fatalf(globals.UnexpectedErrorMessage, "Error creating local webserver: "+err.Error())
 		}
 	}()
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 4. Open browser to the webserver created in step 3
 	// We use xdg-open or open command for Linux and MacOS systems respectively
-	sourceWebserverAddress := "http://" + sourceProxyAddress
+	sourceWebserverAddress := "http://" + webserverAddress
 	browserCommand := exec.Command(browserCli, sourceWebserverAddress)
 	fmt.Println("Opening browser: ", browserCommand)
 	err = browserCommand.Run()
@@ -236,18 +229,14 @@ func RunCommand(cmd *cobra.Command, args []string) {
 			"Failed executing 'xdg-open' command: "+err.Error()+"\nCommand stderr: "+consoleStderr.String())
 	}
 
-	// Capture the interrupt signal (Ctrl+C)
+	// Capture the interrupt signal (Ctrl+C) to close the processes running in the background
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-
 	fmt.Println("Press Ctrl+C to close the connection...")
-
-	// Wait for the signal
 	<-c
 
-	fmt.Printf("\nClosing connection %s...", sourceWebserverAddress)
-
 	// Clean up the connection
+	fmt.Printf("\nClosing connection %s...", sourceWebserverAddress)
 	err = connectCommand.Process.Kill()
 	if err != nil {
 		fancy.Fatalf(globals.UnexpectedErrorMessage,
