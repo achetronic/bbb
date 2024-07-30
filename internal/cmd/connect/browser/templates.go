@@ -49,7 +49,7 @@ const (
 	{Red}Selected target is not configured as Browser target.
 
 	{Magenta}To connect Browser its needed to have one of the following combinations:
-	* Username & Password or Username or Password
+	* Username & Password or Password
 	
 	Contact your H.Boundary administrators and may the force be with you`
 )

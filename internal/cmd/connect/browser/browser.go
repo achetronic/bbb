@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"runtime"
 	"strings"
 	"syscall"
 
@@ -102,9 +103,16 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// Check brokered credentials to guess whether requested target is configured as Browser target
+	// Also checks if the authentication header is with username and password or with bearer token
 	credentialsIndex := -1
+	var authenticationMethod string
 	for credentialIndex, credential := range response.Item.Credentials {
-		if credential.Credential.Username != "" || credential.Credential.Password != "" {
+		if credential.Credential.Password != "" {
+			if credential.Credential.Username != "" {
+				authenticationMethod = "basic"
+			} else {
+				authenticationMethod = "bearer"
+			}
 			credentialsIndex = credentialIndex
 		}
 	}
@@ -142,13 +150,22 @@ func RunCommand(cmd *cobra.Command, args []string) {
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 3. Create a webserver to inject Authorization Header from Username and Password retrieved from H.Boundary
-	// It is needed so xdg-open can not inject headers by itself
+	// It is needed so xdg-open/open can not inject headers by itself
 
-	// Retrieve target session credentials
-	targetSessionBrowserUsername := response.Item.Credentials[credentialsIndex].Credential.Username
-	targetSessionBrowserPassword := response.Item.Credentials[credentialsIndex].Credential.Password
+	// Retrieve target session credentials and creates authorization header
+	var authHeader string
+	if authenticationMethod == "basic" {
+		authHeader = "Basic " + base64.StdEncoding.EncodeToString([]byte(
+			response.Item.Credentials[credentialsIndex].Credential.Username+":"+response.Item.Credentials[credentialsIndex].Credential.Password))
+	} else if authenticationMethod == "bearer" {
+		authHeader = "Basic " + base64.StdEncoding.EncodeToString([]byte(
+			response.Item.Credentials[credentialsIndex].Credential.Password))
+	} else {
+		fancy.Fatalf(globals.UnexpectedErrorMessage,
+			"Unknown authentication method: "+authenticationMethod)
+	}
 
-	// Define the source proxy port randomnly
+	// Define the source proxy port randomnly between minPort and maxPort
 	minPort := 10900
 	maxPort := 11000
 	sourcePort := rand.Intn(maxPort-minPort+1) + minPort
@@ -163,7 +180,8 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	}
 	targetProxyAddress, err := url.Parse(fmt.Sprintf("%s://127.0.0.1:%d", targetProxyProtocol, connectSessionStdout.Port))
 	if err != nil {
-		fancy.Fatalf(globals.UnexpectedErrorMessage, "Failed parsing target URL: "+err.Error())
+		fancy.Fatalf(globals.UnexpectedErrorMessage,
+			"Failed parsing target URL: "+err.Error())
 	}
 
 	// Create the reverse proxy
@@ -176,7 +194,6 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 
 		// Authroization header creation in Basic format
-		authHeader := "Basic " + base64.StdEncoding.EncodeToString([]byte(targetSessionBrowserUsername+":"+targetSessionBrowserPassword))
 		r.Header.Set("Authorization", authHeader)
 
 		// Redirect the request to the target server
@@ -187,7 +204,8 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	go func() {
 		err := http.ListenAndServe(sourceProxyAddress, nil)
 		if err != nil {
-			fmt.Println("Error creating local webserver:", err)
+			fancy.Fatalf(globals.UnexpectedErrorMessage,
+				"Error creating local webserver: "+err.Error())
 		}
 	}()
 
@@ -195,8 +213,17 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	// 4. Open browser to the webserver created in step 3
 	// We use xdg-open or open command for Linux and MacOS systems respectively
 	sourceWebserverAddress := "http://" + sourceProxyAddress
-	browserCommand := exec.Command("xdg-open", sourceWebserverAddress)
-	fmt.Println("Opening browser...", browserCommand)
+	var browserCommand *exec.Cmd
+	switch runtime.GOOS {
+	case "darwin":
+		browserCommand = exec.Command("open", sourceWebserverAddress)
+	case "linux":
+		browserCommand = exec.Command("xdg-open", sourceWebserverAddress)
+	default:
+		fancy.Fatalf(globals.UnexpectedErrorMessage,
+			"Usupported SO, we don't know which command to use to open the browser")
+	}
+	fmt.Println("Opening browser: ", browserCommand)
 	err = browserCommand.Run()
 
 	browserCommand.Stdin = os.Stdin
@@ -212,7 +239,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 
-	fmt.Println("Press Ctrl+C to close connection...")
+	fmt.Println("Press Ctrl+C to close the connection...")
 
 	// Wait for the signal
 	<-c
@@ -226,5 +253,5 @@ func RunCommand(cmd *cobra.Command, args []string) {
 			"\nFailed killing background connection to H.Boundary: %v\n", err)
 	}
 
-	fmt.Println("\nCleaned up Boundary connection and exiting.")
+	fmt.Println("\nCleaned up Boundary connection succesfully and exiting.")
 }
