@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -30,6 +31,10 @@ const (
 	It authorizes a session, and opens a Browser using it`
 )
 
+var (
+	insecure bool
+)
+
 func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:                   "browser",
@@ -39,6 +44,8 @@ func NewCommand() *cobra.Command {
 
 		Run: RunCommand,
 	}
+
+	cmd.Flags().BoolVar(&insecure, "insecure", false, "Creates the local webserver without SSL/TLS")
 
 	return cmd
 }
@@ -141,11 +148,20 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	targetSessionBrowserUsername := response.Item.Credentials[credentialsIndex].Credential.Username
 	targetSessionBrowserPassword := response.Item.Credentials[credentialsIndex].Credential.Password
 
+	// Define the source proxy port randomnly
+	minPort := 10900
+	maxPort := 11000
+	sourcePort := rand.Intn(maxPort-minPort+1) + minPort
+
 	// Define the URL of the source proxy where the browser will be opened
-	sourceProxyAddress := "127.0.0.1:10901"
+	sourceProxyAddress := fmt.Sprintf("127.0.0.1:%d", sourcePort)
 
 	// Define the URL of the target to which the proxy_pass will be made
-	targetProxyAddress, err := url.Parse(fmt.Sprintf("https://127.0.0.1:%d", connectSessionStdout.Port))
+	targetProxyProtocol := "https"
+	if insecure {
+		targetProxyProtocol = "http"
+	}
+	targetProxyAddress, err := url.Parse(fmt.Sprintf("%s://127.0.0.1:%d", targetProxyProtocol, connectSessionStdout.Port))
 	if err != nil {
 		fancy.Fatalf(globals.UnexpectedErrorMessage, "Failed parsing target URL: "+err.Error())
 	}
@@ -171,7 +187,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	go func() {
 		err := http.ListenAndServe(sourceProxyAddress, nil)
 		if err != nil {
-			fmt.Println("Error al iniciar el servidor web:", err)
+			fmt.Println("Error creating local webserver:", err)
 		}
 	}()
 
@@ -196,18 +212,19 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 
-	fmt.Println("Press Ctrl+C to exit...")
+	fmt.Println("Press Ctrl+C to close connection...")
 
 	// Wait for the signal
 	<-c
 
-	fmt.Println("\nExiting...")
+	fmt.Printf("\nClosing connection %s...", sourceWebserverAddress)
 
-	// Aquí podrías agregar código para limpiar o finalizar otros procesos si es necesario
+	// Clean up the connection
 	err = connectCommand.Process.Kill()
 	if err != nil {
-		fmt.Printf("Failed killing background connection to H.Boundary: %v\n", err)
+		fancy.Fatalf(globals.UnexpectedErrorMessage,
+			"\nFailed killing background connection to H.Boundary: %v\n", err)
 	}
 
-	fmt.Println("Cleaned up and exiting.")
+	fmt.Println("\nCleaned up Boundary connection and exiting.")
 }

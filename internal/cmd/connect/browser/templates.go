@@ -19,7 +19,7 @@ const (
 	{Red}Impossible to get target ID from arguments.
 
 	{White}To connect to a target, you need to connect using {Cyan}Target ID {White}as follows:
-	{Bold}{White}console ~$ {Green}bbb connect browser {Cyan}{ttcp_example}`
+	{Bold}{White}console ~$ {Green}bbb connect browser {Cyan}{ttcp_example} [--insecure]`
 
 	// AuthorizeSessionErrorMessage message is thrown when there is an error different from 4xx on authorize-session
 	// command execution
