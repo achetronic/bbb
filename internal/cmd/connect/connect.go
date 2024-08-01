@@ -7,6 +7,7 @@ import (
 
 	"bbb/internal/cmd/connect/kube"
 	"bbb/internal/cmd/connect/ssh"
+	"bbb/internal/cmd/connect/browser"
 )
 
 const (
@@ -26,6 +27,7 @@ func NewCommand() *cobra.Command {
 	c.AddCommand(
 		kube.NewCommand(),
 		ssh.NewCommand(),
+		browser.NewCommand(),
 	)
 
 	return c
