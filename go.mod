@@ -1,6 +1,6 @@
 module bbb
 
-go 1.21
+go 1.22
 
 require (
 	github.com/google/go-github/v63 v63.0.0
