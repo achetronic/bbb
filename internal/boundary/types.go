@@ -6,6 +6,7 @@ type AuthorizeSessionResponseT struct {
 	Item       struct {
 		SessionId string `json:"session_id"`
 		TargetId  string `json:"target_id"`
+		Endpoint  string `json:"endpoint"`
 
 		AuthorizationToken string `json:"authorization_token"`
 		Credentials        []struct {

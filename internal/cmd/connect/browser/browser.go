@@ -132,6 +132,21 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	//
 	targetSessionToken := response.Item.AuthorizationToken
 
+	// Extract host of the target in Boundary for later usage.
+	// Remember some proxies use this to route
+	targetSessionUrl, err := url.Parse(response.Item.Endpoint)
+	if err != nil {
+		fancy.Fatalf(globals.UnexpectedErrorMessage,
+			"Failed parsing session URL. You have to configure a valid URL in Boundary: "+err.Error())
+	}
+
+	// Session URL must have <address>:<port> format in boundary
+	targetSessionHost := strings.Split(targetSessionUrl.Host, ":")
+	if len(targetSessionHost) != 2 {
+		fancy.Fatalf(globals.UnexpectedErrorMessage,
+			"Failed parsing session Host. Session URL must have <address>:<port> format: "+err.Error())
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 2. Create a TCP connection to the target with authorized session previously created
 	// User commands will be performed over this connection
@@ -202,6 +217,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		r.Header.Set("Authorization", authHeader)
+		r.Host = targetSessionHost[0] // First part of the host is the address, second is the port
 		webserver.ServeHTTP(w, r)
 	})
 
