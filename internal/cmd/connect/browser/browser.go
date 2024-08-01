@@ -140,7 +140,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 			"Failed parsing session URL. You have to configure a valid URL in Boundary: "+err.Error())
 	}
 
-	// Session URL must have <address>:<port> format in boundary
+	//
 	targetSessionHost := strings.Split(targetSessionUrl.Host, ":")
 	if len(targetSessionHost) != 2 {
 		fancy.Fatalf(globals.UnexpectedErrorMessage,
@@ -217,7 +217,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		r.Header.Set("Authorization", authHeader)
-		r.Host = targetSessionHost[0] // First part of the host is the address, second is the port
+		r.Host = targetSessionHost[0]
 		webserver.ServeHTTP(w, r)
 	})
 
