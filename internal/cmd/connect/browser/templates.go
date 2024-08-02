@@ -52,4 +52,21 @@ const (
 	* Password to use bearer authentication
 	
 	Contact your H.Boundary administrators and may the force be with you`
+
+	// ConnectionSuccessfulMessage represents the message thrown when everything finished as expected
+	// and shows how to use recently created (connection + webserver) to the user
+	ConnectionSuccessfulMessage = `
+	{Magenta}Some reminders: {Reset}
+
+	* Your H.Boundary session ID is: {Bold}{Cyan}%s {Reset}
+	* Your session will expire in: {Bold}{Cyan}%s {Reset}
+
+
+	Press following combination to kill the connection once you don't need it: 	
+	{Bold}{White}console ~$ {Green}Cntrl + C {Reset}
+
+
+	{Magenta}Your browser will automatically open pointing to desired website.
+	If browser does not open automatically, open it. It's all about your computer being lazy. {Reset}
+	{Bold}{White}Website: {Green}%s`
 )

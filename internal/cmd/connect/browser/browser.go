@@ -233,7 +233,6 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	// We use xdg-open or open command for Linux and MacOS systems respectively
 	sourceWebserverAddress := "http://" + webserverAddress
 	browserCommand := exec.Command(browserCli, sourceWebserverAddress)
-	fmt.Println("Opening browser: ", browserCommand)
 	err = browserCommand.Run()
 
 	browserCommand.Stdin = os.Stdin
@@ -248,16 +247,23 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	// Capture the interrupt signal (Ctrl+C) to close the processes running in the background
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-	fmt.Println("Press Ctrl+C to close the connection...")
+
+	//
+	durationStringFromNow, err := globals.GetDurationStringFromNow(connectSessionStdout.Expiration)
+	if err != nil {
+		fancy.Fatalf(globals.UnexpectedErrorMessage, "Error getting session duration: "+err.Error())
+	}
+
+	fancy.Printf(ConnectionSuccessfulMessage,
+		connectSessionStdout.SessionId,
+		durationStringFromNow,
+		sourceWebserverAddress)
 	<-c
 
 	// Clean up the connection
-	fmt.Printf("\nClosing connection %s...", sourceWebserverAddress)
 	err = connectCommand.Process.Kill()
 	if err != nil {
 		fancy.Fatalf(globals.UnexpectedErrorMessage,
 			"\nFailed killing background connection to H.Boundary: %v\n", err)
 	}
-
-	fmt.Println("\nCleaned up Boundary connection succesfully and exiting.")
 }
