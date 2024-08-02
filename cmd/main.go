@@ -5,12 +5,13 @@ import (
 	"bbb/internal/globals"
 	"context"
 	"errors"
-	"github.com/google/go-github/v63/github"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/google/go-github/v63/github"
 
 	"bbb/internal/cmd"
 )

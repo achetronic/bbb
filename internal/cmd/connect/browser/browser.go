@@ -244,9 +244,14 @@ func RunCommand(cmd *cobra.Command, args []string) {
 			"Failed executing 'xdg-open' command: "+err.Error()+"\nCommand stderr: "+consoleStderr.String())
 	}
 
-	// Capture the interrupt signal (Ctrl+C) to close the processes running in the background
+	// Capture some OS signals to close the process gracefully before closing
+	SignalsToReceive := []os.Signal{
+		syscall.SIGTERM, syscall.SIGINT, // Ctrl+C
+		syscall.SIGTSTP, // Ctrl+Z
+	}
+
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	signal.Notify(c, SignalsToReceive...)
 
 	//
 	durationStringFromNow, err := globals.GetDurationStringFromNow(connectSessionStdout.Expiration)
