@@ -36,7 +36,7 @@ const (
 
 var (
 	insecureFlag  bool
-	webserverPort int
+	webserverPort int = GetFreeRandomPort(webserverPortRangeMin, webserverPortRangeMax)
 )
 
 func NewCommand() *cobra.Command {
@@ -197,9 +197,6 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// Define the local webserver proxy address
-	if webserverPort == 0 {
-		webserverPort = GetFreeRandomPort(webserverPortRangeMin, webserverPortRangeMax)
-	}
 	webserverAddress := fmt.Sprintf("127.0.0.1:%d", webserverPort)
 
 	// Define the URL of the target where the local webserver will attack
