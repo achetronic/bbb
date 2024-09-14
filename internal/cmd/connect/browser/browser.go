@@ -35,7 +35,8 @@ const (
 )
 
 var (
-	insecureFlag bool
+	insecureFlag  bool
+	webserverPort int = GetFreeRandomPort(webserverPortRangeMin, webserverPortRangeMax)
 )
 
 func NewCommand() *cobra.Command {
@@ -49,6 +50,7 @@ func NewCommand() *cobra.Command {
 	}
 
 	cmd.Flags().BoolVar(&insecureFlag, "insecure", false, "Creates the local webserver without SSL/TLS")
+	cmd.Flags().IntVar(&webserverPort, "port", webserverPort, "Port for the local webserver where browser will connect")
 
 	return cmd
 }
@@ -195,7 +197,6 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// Define the local webserver proxy address
-	webserverPort := GetFreeRandomPort(webserverPortRangeMin, webserverPortRangeMax)
 	webserverAddress := fmt.Sprintf("127.0.0.1:%d", webserverPort)
 
 	// Define the URL of the target where the local webserver will attack

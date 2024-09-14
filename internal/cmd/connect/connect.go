@@ -5,9 +5,9 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"bbb/internal/cmd/connect/browser"
 	"bbb/internal/cmd/connect/kube"
 	"bbb/internal/cmd/connect/ssh"
-	"bbb/internal/cmd/connect/browser"
 )
 
 const (
