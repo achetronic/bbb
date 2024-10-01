@@ -128,7 +128,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	}
 
 	if credentialsIndex == -1 {
-		fancy.Fatalf(NotBrowserTargetErrorMessage)
+		fancy.Printf(TargetWithNoCredentials)
 	}
 
 	//
@@ -179,21 +179,25 @@ func RunCommand(cmd *cobra.Command, args []string) {
 
 	// #### FIXME: Assume bearer authentication as password must always be present
 	// Assume basic auth when username is also present
-	var headerAuthUsername string
+	var authHeader string = ""
 
-	authenticationMethod = "bearer"
-	if response.Item.Credentials[credentialsIndex].Credential.Username != "" {
-		authenticationMethod = "basic"
-		headerAuthUsername = response.Item.Credentials[credentialsIndex].Credential.Username
-	}
+	if credentialsIndex != -1 {
+		var headerAuthUsername string
 
-	authHeader, err := GetAuthHeaderValue(
-		headerAuthUsername,
-		response.Item.Credentials[credentialsIndex].Credential.Password,
-		authenticationMethod)
-	if err != nil {
-		fancy.Fatalf(globals.UnexpectedErrorMessage,
-			"Failed crafting authorization header: "+err.Error())
+		authenticationMethod = "bearer"
+		if response.Item.Credentials[credentialsIndex].Credential.Username != "" {
+			authenticationMethod = "basic"
+			headerAuthUsername = response.Item.Credentials[credentialsIndex].Credential.Username
+		}
+
+		authHeader, err = GetAuthHeaderValue(
+			headerAuthUsername,
+			response.Item.Credentials[credentialsIndex].Credential.Password,
+			authenticationMethod)
+		if err != nil {
+			fancy.Fatalf(globals.UnexpectedErrorMessage,
+				"Failed crafting authorization header: "+err.Error())
+		}
 	}
 
 	// Define the local webserver proxy address

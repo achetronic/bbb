@@ -69,4 +69,10 @@ const (
 	{Magenta}Your browser will automatically open pointing to desired website.
 	If browser does not open automatically, open it. It's all about your computer being lazy. {Reset}
 	{Bold}{White}Website: {Green}%s`
+
+	//
+	TargetWithNoCredentials = `
+	{Magenta}Selected target has no credentials associated.
+
+	Anyways we will try to connect to your target with no credentials, but it may fail.`
 )
