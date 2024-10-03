@@ -72,14 +72,24 @@ check-go-target: ## Check presence of GOOS and GOARCH vars.
 		exit 1; \
 	fi
 
-check-cgo-switch: ## Check presence of CGO_ENABLED vars.
+check-cgo-switch: ## Check presence of CGO_ENABLED var.
 	@if [ -z "$(CGO_ENABLED)" ]; then \
 		echo "CGO_ENABLED is not defined. Define CGO_ENABLED y try again."; \
 		exit 1; \
 	fi
 
+check-version: ## Check presence of VERSION var.
+	@if [ -z "$(VERSION)" ]; then \
+		echo "VERSION is not defined. Define VERSION y try again."; \
+		exit 1; \
+	fi
+
+	@echo $(VERSION) | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$$' || \
+		(echo "VERSION must be in semver format" && exit 1)
+
 .PHONY: build
-build: fmt vet check-go-target check-cgo-switch ## Build CLI binary.
+build: fmt vet check-go-target check-cgo-switch check-version ## Build CLI binary.
+	@sed -i "s#{VERSION}#$(VERSION)#g" ./internal/cmd/version/version.go
 	go build -o bin/bbb-$(GOOS)-$(GOARCH) cmd/main.go
 
 .PHONY: run

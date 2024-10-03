@@ -7,10 +7,8 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"os/signal"
 	"runtime"
 	"strings"
-	"syscall"
 
 	"github.com/spf13/cobra"
 
@@ -35,8 +33,10 @@ const (
 )
 
 var (
-	insecureFlag  bool
 	webserverPort int = GetFreeRandomPort(webserverPortRangeMin, webserverPortRangeMax)
+
+	//
+	targetProxyAddressPattern = "%s://127.0.0.1:%d"
 )
 
 func NewCommand() *cobra.Command {
@@ -49,7 +49,6 @@ func NewCommand() *cobra.Command {
 		Run: RunCommand,
 	}
 
-	cmd.Flags().BoolVar(&insecureFlag, "insecure", false, "Creates the local webserver without SSL/TLS")
 	cmd.Flags().IntVar(&webserverPort, "port", webserverPort, "Port for the local webserver where browser will connect")
 
 	return cmd
@@ -177,7 +176,20 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	// 3. Create a webserver to inject Authorization Header from Username and Password retrieved from H.Boundary
 	// It is needed so xdg-open/open can not inject headers by itself
 
-	// #### FIXME: Assume bearer authentication as password must always be present
+	// Check the protocol used by the brokered target
+	targetProxyAddress := fmt.Sprintf(targetProxyAddressPattern, "http", connectSessionStdout.Port)
+	_, err = http.Get(targetProxyAddress)
+	if err != nil {
+		targetProxyAddress = fmt.Sprintf(targetProxyAddressPattern, "https", connectSessionStdout.Port)
+	}
+
+	targetProxyAddressObj, err := url.Parse(targetProxyAddress)
+	if err != nil {
+		fancy.Fatalf(globals.UnexpectedErrorMessage,
+			"Failed parsing target URL: "+err.Error())
+	}
+
+	// If there are credentials, assume bearer authentication using password as token by default.
 	// Assume basic auth when username is also present
 	var authHeader string = ""
 
@@ -200,22 +212,9 @@ func RunCommand(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	// Define the local webserver proxy address
-	webserverAddress := fmt.Sprintf("127.0.0.1:%d", webserverPort)
-
-	// Define the URL of the target where the local webserver will attack
-	targetScheme := "https"
-	if insecureFlag {
-		targetScheme = "http"
-	}
-	targetProxyAddress, err := url.Parse(fmt.Sprintf("%s://127.0.0.1:%d", targetScheme, connectSessionStdout.Port))
-	if err != nil {
-		fancy.Fatalf(globals.UnexpectedErrorMessage,
-			"Failed parsing target URL: "+err.Error())
-	}
-
 	// Create and start the webserver
-	webserver := httputil.NewSingleHostReverseProxy(targetProxyAddress)
+	webserverAddress := fmt.Sprintf("127.0.0.1:%d", webserverPort)
+	webserver := httputil.NewSingleHostReverseProxy(targetProxyAddressObj)
 	webserver.Transport = &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
@@ -250,25 +249,17 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// Capture some OS signals to close the process gracefully before closing
-	SignalsToReceive := []os.Signal{
-		syscall.SIGTERM, syscall.SIGINT, // Ctrl+C
-		syscall.SIGTSTP, // Ctrl+Z
-	}
+	WaitSignalAfter(func() {
+		durationStringFromNow, err := globals.GetDurationStringFromNow(connectSessionStdout.Expiration)
+		if err != nil {
+			fancy.Fatalf(globals.UnexpectedErrorMessage, "Error getting session duration: "+err.Error())
+		}
 
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, SignalsToReceive...)
-
-	//
-	durationStringFromNow, err := globals.GetDurationStringFromNow(connectSessionStdout.Expiration)
-	if err != nil {
-		fancy.Fatalf(globals.UnexpectedErrorMessage, "Error getting session duration: "+err.Error())
-	}
-
-	fancy.Printf(ConnectionSuccessfulMessage,
-		connectSessionStdout.SessionId,
-		durationStringFromNow,
-		sourceWebserverAddress)
-	<-c
+		fancy.Printf(ConnectionSuccessfulMessage,
+			connectSessionStdout.SessionId,
+			durationStringFromNow,
+			sourceWebserverAddress)
+	})
 
 	// Clean up the connection
 	err = connectCommand.Process.Kill()

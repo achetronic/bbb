@@ -62,8 +62,8 @@ jobs:
 
           export GOOS=${{ matrix.goos }}
           export GOARCH=${{ matrix.goarch }}
-
           export CGO_ENABLED=0
+          export VERSION=${{ steps.read_tag.outputs.release_tag }}
 
           make build
 

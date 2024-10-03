@@ -4,6 +4,9 @@ import (
 	"encoding/base64"
 	"fmt"
 	"math/rand/v2"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 // GetAuthHeaderValue returns the value of the Authorization header
@@ -43,4 +46,22 @@ func GetFreeRandomPort(min, max int) (port int) {
 
 	// TODO: logic to check if the port is truly free
 	return port
+}
+
+// WaitSignalAfter waits for a signal to close the process gracefully
+// after executing a callback function
+func WaitSignalAfter(callback func()) {
+
+	callback()
+
+	// Capture some OS signals to close the process gracefully before closing
+	SignalsToReceive := []os.Signal{
+		syscall.SIGTERM, syscall.SIGINT, // Ctrl+C
+		syscall.SIGTSTP, // Ctrl+Z
+	}
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, SignalsToReceive...)
+
+	<-c
 }
