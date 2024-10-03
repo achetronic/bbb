@@ -62,7 +62,7 @@ lint-fix: golangci-lint ## Run golangci-lint linter and perform fixes
 ##@ Build
 
 .PHONY: check-go-target
-check-go-target: ## Check presente of GOOS and GOARCH vars.
+check-go-target: ## Check presence of GOOS and GOARCH vars.
 	@if [ -z "$(GOOS)" ]; then \
 		echo "GOOS is not defined. Define GOOS y try again."; \
 		exit 1; \
@@ -72,8 +72,14 @@ check-go-target: ## Check presente of GOOS and GOARCH vars.
 		exit 1; \
 	fi
 
+check-cgo-switch: ## Check presence of CGO_ENABLED vars.
+	@if [ -z "$(CGO_ENABLED)" ]; then \
+		echo "CGO_ENABLED is not defined. Define CGO_ENABLED y try again."; \
+		exit 1; \
+	fi
+
 .PHONY: build
-build: fmt vet check-go-target ## Build CLI binary.
+build: fmt vet check-go-target check-cgo-switch ## Build CLI binary.
 	go build -o bin/bbb-$(GOOS)-$(GOARCH) cmd/main.go
 
 .PHONY: run
