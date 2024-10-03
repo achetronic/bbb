@@ -4,7 +4,7 @@ const (
 	BrowserCliNotFoundErrorMessage = `
 	{Red}A browser opener CLI is not detected on your system.
 
-	{Magenta}How do you expect to use a Browser connection without having a CLI in your system? 
+	{Magenta}How do you expect to use a Browser connection without having a CLI in your system?
 	C'mon everybody has xdg-open or open in their systems, are you using a toaster?
 
 	{White}It is possible to remediate this issue installing it from:
@@ -50,8 +50,14 @@ const (
 	{Magenta}To connect Browser its needed to have one of the following combinations:
 	* Username & Password to use basic authentication
 	* Password to use bearer authentication
-	
+
 	Contact your H.Boundary administrators and may the force be with you`
+
+	//
+	TargetWithNoCredentials = `
+	{Magenta}Selected target has no credentials associated.
+
+	Anyways we will try to connect to your target with no credentials, but it may fail.`
 
 	// ConnectionSuccessfulMessage represents the message thrown when everything finished as expected
 	// and shows how to use recently created (connection + webserver) to the user
@@ -62,7 +68,7 @@ const (
 	* Your session will expire in: {Bold}{Cyan}%s {Reset}
 
 
-	Press following combination to kill the connection once you don't need it: 	
+	Press following combination to kill the connection once you don't need it:
 	{Bold}{White}console ~$ {Green}Cntrl + C {Reset}
 
 

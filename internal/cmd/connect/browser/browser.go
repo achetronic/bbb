@@ -117,8 +117,8 @@ func RunCommand(cmd *cobra.Command, args []string) {
 		fancy.Fatalf(AuthorizeSessionUserErrorMessage, consoleStdout.String())
 	}
 
-	// Check brokered credentials to guess whether requested target is configured as Browser target
-	// Only checking password as it is mandatory for all types of authentication. Username is checked later
+	// Check brokered credentials to guess which type of auth to use as Browser target
+	// If some credentials are brokered, password is mandatory for all types of authentication. Username is checked later
 	credentialsIndex := -1
 	var authenticationMethod string
 	for credentialIndex, credential := range response.Item.Credentials {
@@ -128,7 +128,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	}
 
 	if credentialsIndex == -1 {
-		fancy.Fatalf(NotBrowserTargetErrorMessage)
+		fancy.Printf(TargetWithNoCredentials)
 	}
 
 	//
@@ -179,21 +179,25 @@ func RunCommand(cmd *cobra.Command, args []string) {
 
 	// #### FIXME: Assume bearer authentication as password must always be present
 	// Assume basic auth when username is also present
-	var headerAuthUsername string
+	var authHeader string = ""
 
-	authenticationMethod = "bearer"
-	if response.Item.Credentials[credentialsIndex].Credential.Username != "" {
-		authenticationMethod = "basic"
-		headerAuthUsername = response.Item.Credentials[credentialsIndex].Credential.Username
-	}
+	if credentialsIndex != -1 {
+		var headerAuthUsername string
 
-	authHeader, err := GetAuthHeaderValue(
-		headerAuthUsername,
-		response.Item.Credentials[credentialsIndex].Credential.Password,
-		authenticationMethod)
-	if err != nil {
-		fancy.Fatalf(globals.UnexpectedErrorMessage,
-			"Failed crafting authorization header: "+err.Error())
+		authenticationMethod = "bearer"
+		if response.Item.Credentials[credentialsIndex].Credential.Username != "" {
+			authenticationMethod = "basic"
+			headerAuthUsername = response.Item.Credentials[credentialsIndex].Credential.Username
+		}
+
+		authHeader, err = GetAuthHeaderValue(
+			headerAuthUsername,
+			response.Item.Credentials[credentialsIndex].Credential.Password,
+			authenticationMethod)
+		if err != nil {
+			fancy.Fatalf(globals.UnexpectedErrorMessage,
+				"Failed crafting authorization header: "+err.Error())
+		}
 	}
 
 	// Define the local webserver proxy address

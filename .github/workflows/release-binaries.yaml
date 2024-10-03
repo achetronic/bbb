@@ -59,10 +59,12 @@ jobs:
         id: build_binary
         run: |
           printf "GOOS: %s, GOARCH: %s\n" "${{ matrix.goos }}" "${{ matrix.goarch }}"
-          
+
           export GOOS=${{ matrix.goos }}
           export GOARCH=${{ matrix.goarch }}
-          
+
+          export CGO_ENABLED=0
+
           make build
 
       - name: "Craft package and its signature"
@@ -71,10 +73,10 @@ jobs:
           export GOOS=${{ matrix.goos }}
           export GOARCH=${{ matrix.goarch }}
           export PACKAGE_NAME=bbb-${{ steps.read_tag.outputs.release_tag }}-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
-          
+
           make package
           make package-signature
-          
+
           echo "package_name=${PACKAGE_NAME}" >> "$GITHUB_OUTPUT"
 
       - name: "Upload package to release"
