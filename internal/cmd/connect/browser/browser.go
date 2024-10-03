@@ -117,8 +117,8 @@ func RunCommand(cmd *cobra.Command, args []string) {
 		fancy.Fatalf(AuthorizeSessionUserErrorMessage, consoleStdout.String())
 	}
 
-	// Check brokered credentials to guess whether requested target is configured as Browser target
-	// Only checking password as it is mandatory for all types of authentication. Username is checked later
+	// Check brokered credentials to guess which type of auth to use as Browser target
+	// If some credentials are brokered, password is mandatory for all types of authentication. Username is checked later
 	credentialsIndex := -1
 	var authenticationMethod string
 	for credentialIndex, credential := range response.Item.Credentials {
