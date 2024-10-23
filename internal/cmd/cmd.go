@@ -8,6 +8,7 @@ import (
 	"bbb/internal/cmd/auth"
 	"bbb/internal/cmd/connect"
 	"bbb/internal/cmd/list"
+	"bbb/internal/cmd/upgrade"
 	"bbb/internal/cmd/version"
 )
 
@@ -27,10 +28,11 @@ func NewRootCommand(name string) *cobra.Command {
 	}
 
 	c.AddCommand(
-		version.NewCommand(),
 		auth.NewCommand(),
-		list.NewCommand(),
 		connect.NewCommand(),
+		list.NewCommand(),
+		upgrade.NewCommand(),
+		version.NewCommand(),
 	)
 
 	return c

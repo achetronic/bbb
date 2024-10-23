@@ -91,6 +91,7 @@ check-version: ## Check presence of VERSION var.
 build: fmt vet check-go-target check-cgo-switch check-version ## Build CLI binary.
 	@sed -i "s#{VERSION}#$(VERSION)#g" ./internal/cmd/version/version.go
 	go build -o bin/bbb-$(GOOS)-$(GOARCH) cmd/main.go
+	@sed -i -E 's/(version: )v[0-9.]+/\1{VERSION}/' ./internal/cmd/version/version.go
 
 .PHONY: run
 run: fmt vet ## Run a CLI from your host.
