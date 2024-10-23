@@ -4,7 +4,6 @@ import (
 	"bbb/internal/fancy"
 	"bbb/internal/globals"
 	"context"
-	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -16,24 +15,26 @@ import (
 	"bbb/internal/cmd"
 )
 
-func checkEnv() (err error) {
-	boundaryAddress := os.Getenv("BOUNDARY_ADDR")
+// func checkEnv() (err error) {
+// 	boundaryAddress := os.Getenv("BOUNDARY_ADDR")
 
-	if boundaryAddress == "" {
-		return errors.New("BOUNDARY_ADDR environment variable not set")
-	}
+// 	if boundaryAddress == "" {
+// 		return errors.New("BOUNDARY_ADDR environment variable not set")
+// 	}
 
-	return err
-}
+// 	return err
+// }
 
 func main() {
+	var err error
+
 	ctx := context.Background()
 	baseName := filepath.Base(os.Args[0])
 
-	err := checkEnv()
-	if err != nil {
-		fancy.Fatalf(globals.UnexpectedErrorMessage, err.Error())
-	}
+	// err := checkEnv()
+	// if err != nil {
+	// 	fancy.Fatalf(globals.UnexpectedErrorMessage, err.Error())
+	// }
 
 	// Check Boundary CLI existence and give some suggestions when not present
 	_, err = exec.LookPath("boundary")

@@ -9,6 +9,17 @@ import (
 
 var BbbTemporaryDir = os.TempDir() + "/bbb"
 
+// TODO
+func CheckEnv() (err error) {
+	boundaryAddress := os.Getenv("BOUNDARY_ADDR")
+
+	if boundaryAddress == "" {
+		return errors.New("BOUNDARY_ADDR environment variable not set")
+	}
+
+	return err
+}
+
 // GetStoredToken TODO
 func GetStoredToken() (token string, err error) {
 	fileContent, err := os.ReadFile(BbbTemporaryDir + "/BOUNDARY_TOKEN")

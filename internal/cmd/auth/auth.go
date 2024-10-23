@@ -24,10 +24,19 @@ func NewCommand() *cobra.Command {
 		Short: descriptionShort,
 		Long:  strings.ReplaceAll(descriptionLong, "\t", ""),
 
-		Run: RunCommand,
+		PersistentPreRun: PreRunCommand,
+		Run:              RunCommand,
 	}
 
 	return c
+}
+
+// PreRunCommand TODO
+func PreRunCommand(cmd *cobra.Command, args []string) {
+	err := globals.CheckEnv()
+	if err != nil {
+		fancy.Fatalf(globals.UnexpectedErrorMessage, err.Error())
+	}
 }
 
 // RunCommand TODO

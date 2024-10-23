@@ -8,6 +8,8 @@ import (
 	"bbb/internal/cmd/connect/browser"
 	"bbb/internal/cmd/connect/kube"
 	"bbb/internal/cmd/connect/ssh"
+	"bbb/internal/fancy"
+	"bbb/internal/globals"
 )
 
 const (
@@ -22,6 +24,8 @@ func NewCommand() *cobra.Command {
 		Use:   "connect",
 		Short: descriptionShort,
 		Long:  strings.ReplaceAll(descriptionLong, "\t", ""),
+
+		PersistentPreRun: PreRunCommand,
 	}
 
 	c.AddCommand(
@@ -31,4 +35,12 @@ func NewCommand() *cobra.Command {
 	)
 
 	return c
+}
+
+// PreRunCommand TODO
+func PreRunCommand(cmd *cobra.Command, args []string) {
+	err := globals.CheckEnv()
+	if err != nil {
+		fancy.Fatalf(globals.UnexpectedErrorMessage, err.Error())
+	}
 }

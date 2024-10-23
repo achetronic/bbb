@@ -1,14 +1,15 @@
 package upgrade
 
 import (
+	"bbb/internal/cmd/version"
 	"bbb/internal/fancy"
 	"bbb/internal/globals"
+	"bufio"
 	"bytes"
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -43,14 +44,25 @@ func NewCommand() *cobra.Command {
 	return cmd
 }
 
-// DISCLAIMER: THIS COMMAND IS A WORK IN PROGRESS
+// RunCommand TODO
 func RunCommand(cmd *cobra.Command, args []string) {
 
-	// Request release data
+	// 0. Ask the user
+	fancy.Printf(UpgradeConfirmationMessage)
+
+	inScanner := bufio.NewScanner(os.Stdin)
+	inScanner.Scan()
+	userAnswer := inScanner.Text()
+
+	if userAnswer != "yes" {
+		return
+	}
+
+	// 1. Retrieve release data
 	latestReleaseResp, err := http.Get(latestReleaseDataUrl)
 	if err != nil {
 		fancy.Fatalf(globals.UnexpectedErrorMessage,
-			"failed getting release data: %s", err.Error())
+			fmt.Sprintf("failed getting release data: %s", err.Error()))
 	}
 
 	defer latestReleaseResp.Body.Close()
@@ -58,16 +70,18 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	//
 	latestReleaseBodyBytes, err := io.ReadAll(latestReleaseResp.Body)
 	if err != nil {
-		fancy.Fatalf(globals.UnexpectedErrorMessage, "failed reading JSON from releases page: %s", err.Error())
+		fancy.Fatalf(globals.UnexpectedErrorMessage,
+			fmt.Sprintf("failed reading JSON from releases page: %s", err.Error()))
 	}
 
 	releaseObj := &github.RepositoryRelease{}
 	err = json.Unmarshal(latestReleaseBodyBytes, releaseObj)
 	if err != nil {
-		fancy.Fatalf(globals.UnexpectedErrorMessage, "failed to decode JSON structure from release")
+		fancy.Fatalf(globals.UnexpectedErrorMessage,
+			fmt.Sprintf("failed to decode JSON structure from release: %s", err.Error()))
 	}
 
-	// Select proper asset and its checksum
+	// 2. Select proper asset and its checksum
 	var assetUrl string
 	var assetChecksumUrl string
 	for _, asset := range releaseObj.Assets {
@@ -84,23 +98,26 @@ func RunCommand(cmd *cobra.Command, args []string) {
 		assetUrl = *asset.BrowserDownloadURL
 	}
 
-	// Download the assets
+	// 3. Download the assets
 	assetResp, err := http.Get(assetUrl)
 	if err != nil {
-		fancy.Fatalf(globals.UnexpectedErrorMessage, "failed downloading the asset: %s", err.Error())
+		fancy.Fatalf(globals.UnexpectedErrorMessage,
+			fmt.Sprintf("failed downloading the asset: %s", err.Error()))
 	}
 	defer assetResp.Body.Close()
 
 	assetChecksumResp, err := http.Get(assetChecksumUrl)
 	if err != nil {
-		fancy.Fatalf(globals.UnexpectedErrorMessage, "failed downloading the asset's checksum: %s", err.Error())
+		fancy.Fatalf(globals.UnexpectedErrorMessage,
+			fmt.Sprintf("failed downloading the asset's checksum: %s", err.Error()))
 	}
 	defer assetChecksumResp.Body.Close()
 
-	// Calculate package checksum and compare with published checksum
+	// 4. Calculate package checksum and compare with published checksum
 	publicChecksum, err := io.ReadAll(assetChecksumResp.Body)
 	if err != nil {
-		fancy.Fatalf(globals.UnexpectedErrorMessage, "failed loading asset's checksum into memory %s", err.Error())
+		fancy.Fatalf(globals.UnexpectedErrorMessage,
+			fmt.Sprintf("failed loading asset's checksum into memory %s", err.Error()))
 	}
 
 	calculatedChecksum := md5.New()
@@ -112,40 +129,46 @@ func RunCommand(cmd *cobra.Command, args []string) {
 
 	_, err = io.Copy(multiWriterEntity, assetResp.Body)
 	if err != nil {
-		fancy.Fatalf(globals.UnexpectedErrorMessage, "failed copying bytes to multiwriter: %s", err.Error())
+		fancy.Fatalf(globals.UnexpectedErrorMessage,
+			fmt.Sprintf("failed copying bytes to multiwriter: %s", err.Error()))
 	}
 
 	if strings.TrimSpace(string(publicChecksum)) != fmt.Sprintf("%x", calculatedChecksum.Sum(nil)) {
 		fancy.Fatalf(globals.UnexpectedErrorMessage, "checksums doesn't match. Is the release corrupted?")
 	}
 
-	// Place downloaded files in a temporary place
+	// 5. Place downloaded files in a temporary place
 	tmpDirPath, err := os.MkdirTemp("", "bbb-*")
 	if err != nil {
-		fancy.Fatalf(globals.UnexpectedErrorMessage, "failed creating temporary directory: %s", err.Error())
+		fancy.Fatalf(globals.UnexpectedErrorMessage,
+			fmt.Sprintf("failed creating temporary directory: %s", err.Error()))
 	}
 
 	err = UnTarGz(bytes.NewReader(assetBytes.Bytes()), tmpDirPath)
 	if err != nil {
-		fancy.Fatalf(globals.UnexpectedErrorMessage, "failed un-extracting downloaded asset from release: %s", err.Error())
+		fancy.Fatalf(globals.UnexpectedErrorMessage,
+			fmt.Sprintf("failed un-extracting downloaded asset from release: %s", err.Error()))
 	}
 
-	// Perform binary upgrade
+	// 6. Perform binary upgrade
 	binaryBytes, err := os.ReadFile(filepath.Join(tmpDirPath, "bbb"))
 	if err != nil {
-		fancy.Fatalf(globals.UnexpectedErrorMessage, "failed loading final binary in memory: %s", err.Error())
+		fancy.Fatalf(globals.UnexpectedErrorMessage,
+			fmt.Sprintf("failed loading final binary in memory: %s", err.Error()))
 	}
 
 	err = selfupdate.PrepareAndCheckBinary(bytes.NewReader(binaryBytes), selfupdate.Options{})
 	if err != nil {
-		fancy.Fatalf(globals.UnexpectedErrorMessage, "failed preparing and checking downloaded binary: %s", err.Error())
+		fancy.Fatalf(globals.UnexpectedErrorMessage,
+			fmt.Sprintf("failed preparing and checking downloaded binary: %s", err.Error()))
 	}
 
 	err = selfupdate.CommitBinary(selfupdate.Options{})
 	if err != nil {
-		fancy.Fatalf(globals.UnexpectedErrorMessage, "failed replacing prior binary with the new one: %s", err.Error())
+		fancy.Fatalf(globals.UnexpectedErrorMessage,
+			fmt.Sprintf("failed replacing prior binary with the new one: %s", err.Error()))
 	}
 
-	log.Print("Success upgrading BBB!")
+	fancy.Printf(UpgradeSuccessfulMessage, version.Version)
 
 }

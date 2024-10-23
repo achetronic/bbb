@@ -11,6 +11,8 @@ const (
 	descriptionShort = `Print the current version`
 	descriptionLong  = `
 	Version show the current bbb version client.`
+
+	Version = "version: {VERSION}\n"
 )
 
 func NewCommand() *cobra.Command {
@@ -27,5 +29,5 @@ func NewCommand() *cobra.Command {
 }
 
 func RunCommand(cmd *cobra.Command, args []string) {
-	fmt.Print("version: {VERSION}\n")
+	fmt.Print(Version)
 }
