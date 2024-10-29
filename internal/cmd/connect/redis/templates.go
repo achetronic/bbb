@@ -12,7 +12,7 @@ const (
 	{White}For Linux users: {Reset}{Cyan}Use your package manager and install 'redis'
 	{White}For MacOS users: {Reset}{Cyan}Use your package manager and install 'redis'
 
-	{White}Anyways, we will create the connection and we will not open redis-cli for you :(`
+	{White}Install redis-cli and try again if you want ;)`
 
 	// CommandArgsNoTargetErrorMessage is the message thrown when the user is trying to establish a connection
 	// without defining a target
@@ -66,6 +66,6 @@ const (
 
 	{Magenta}Your redis CLI will automatically open pointing to desired URL.
 	If redis-cli does not open automatically, probably you don't have the package installed
-	Just install it or open the conenction manually to the following URL{Reset}
+	Just install it and try again{Reset}
 	{Bold}{White}Redis listening on: {Green}%s`
 )

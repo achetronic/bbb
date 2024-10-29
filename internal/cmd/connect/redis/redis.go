@@ -59,13 +59,10 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	// Redis-cli package used to open the connection
 	var redisCli string = "redis-cli"
 
-	// Check if redis-cli is present in the system, if not, just return the connection to the user
-	var redisCliPresent bool = true
-
+	// Check if redis-cli is present in the system, if not, exit with error
 	_, err = exec.LookPath(redisCli)
 	if err != nil {
-		fancy.Printf(RedisCliNotFoundErrorMessage)
-		redisCliPresent = false
+		fancy.Fatalf(RedisCliNotFoundErrorMessage)
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -183,18 +180,11 @@ func RunCommand(cmd *cobra.Command, args []string) {
 		durationStringFromNow,
 		redisUrl)
 
-	// If redis-cli is not present, just return the connection to the user
-	if redisCliPresent {
-		err = redisCommand.Run()
+	err = redisCommand.Run()
 
-		if err != nil {
-			fancy.Fatalf(globals.UnexpectedErrorMessage,
-				"Failed executing '"+redisCli+"' command: "+err.Error()+"\nCommand stderr: "+consoleStderr.String())
-		}
-	} else {
-		// If redis-cli is not present, just return the connection to the user and wait
-		// for the user to close the connection manually with Cntrl+C
-		WaitSignal()
+	if err != nil {
+		fancy.Fatalf(globals.UnexpectedErrorMessage,
+			"Failed executing '"+redisCli+"' command: "+err.Error()+"\nCommand stderr: "+consoleStderr.String())
 	}
 
 	// Clean up the connection
