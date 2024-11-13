@@ -18,9 +18,10 @@ const (
 	{Bold}{White}console ~$ {Green}bbb connect ssh {Cyan}{ttcp_example} {Reset}
 	{Bold}{White}console ~$ {Green}bbb connect kube {Cyan}{ttcp_example} {Reset}
 	{Bold}{White}console ~$ {Green}bbb connect browser {Cyan}{ttcp_example} [--insecure]{Reset}
+	{Bold}{White}console ~$ {Green}bbb connect redis {Cyan}{ttcp_example}{Reset}
 
-	Remember to use {Bold}{Cyan}ssh{Reset}, {Bold}{Cyan}kube{Reset} or {Bold}{Cyan}browser{Reset} subcommand
-	depending on the target you are trying to connect to.`
+	Remember to use {Bold}{Cyan}ssh{Reset}, {Bold}{Cyan}kube{Reset}, {Bold}{Cyan}browser{Reset}
+	or {Bold}{Cyan}redis{Reset} subcommand depending on the target you are trying to connect to.`
 
 	//
 	ListCommandEmpty = `
