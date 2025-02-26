@@ -23,6 +23,10 @@ const (
 	It authorizes a session, and performs SSH connection using it`
 )
 
+var (
+	localPortForwarding string
+)
+
 func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:                   "ssh",
@@ -32,6 +36,8 @@ func NewCommand() *cobra.Command {
 
 		Run: RunCommand,
 	}
+
+	cmd.Flags().StringVarP(&localPortForwarding, "localPortForwarding", "L", "", `Local Port Forwarding, [local_address:]local_port:destination_host:destination_port. Examples: -L 8080:localhost:80`)
 
 	return cmd
 }
@@ -154,6 +160,13 @@ func RunCommand(cmd *cobra.Command, args []string) {
 		"-p", strconv.Itoa(connectSessionStdout.Port),
 		"-A", targetSessionSshUsername + "@127.0.0.1",
 		"-i", temporaryPrivatekeyFile}
+
+	if localPortForwarding != "" {
+		sshConnectionArgs = append(sshConnectionArgs, "-L", localPortForwarding)
+		// This line prevents the insterative shell from opening and keeps the server in background.
+		sshConnectionArgs = append(sshConnectionArgs, "-N")
+		fancy.Printf(SshLocalPortForwardingInfoMessage)
+	}
 
 	sshCommand := exec.Command("ssh", sshConnectionArgs...)
 
