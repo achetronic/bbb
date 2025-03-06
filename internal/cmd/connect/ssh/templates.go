@@ -52,4 +52,11 @@ const (
 	* Username & Private Key
 	
 	Contact your H.Boundary administrators and may the force be with you`
+
+	// SshLocalPortForwardingInfoMessage message to advise that local port forwarding is in progress
+	SshLocalPortForwardingInfoMessage = `
+	Establishing SSH tunneling with local port forwarding...
+
+	Press following combination to kill the connection once you don't need it:
+	{Bold}{White}console ~$ {Green}Cntrl + C {Reset}`
 )
