@@ -37,7 +37,8 @@ func NewCommand() *cobra.Command {
 		Run: RunCommand,
 	}
 
-	cmd.Flags().StringVarP(&localPortForwarding, "localPortForwarding", "L", "", `Local Port Forwarding, [local_address:]local_port:destination_host:destination_port. Examples: -L 8080:localhost:80`)
+	cmd.Flags().StringVarP(&localPortForwarding, "local-port-forwarding", "l", "",
+		`local port forwarding, [local_address:]local_port:destination_host:destination_port. Examples: -l 8080:localhost:80`)
 
 	return cmd
 }
