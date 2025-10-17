@@ -25,6 +25,8 @@ const (
 
 var (
 	localPortForwarding string
+	command             string
+	options             []string
 )
 
 func NewCommand() *cobra.Command {
@@ -34,11 +36,18 @@ func NewCommand() *cobra.Command {
 		Short:                 descriptionShort,
 		Long:                  strings.ReplaceAll(descriptionLong, "\t", ""),
 
+		PreRun: func(cmd *cobra.Command, args []string) {
+			if cmd.Flags().Changed("local-port-forwarding") && cmd.Flags().Changed("command") {
+				fancy.Fatalf(CommandArgsConflict1ErrorMessage)
+			}
+		},
 		Run: RunCommand,
 	}
 
 	cmd.Flags().StringVarP(&localPortForwarding, "local-port-forwarding", "l", "",
 		`local port forwarding, [local_address:]local_port:destination_host:destination_port. Examples: -l 8080:localhost:80`)
+	cmd.Flags().StringVarP(&command, "command", "c", "", `command to execute on the remote machine. Examples: -c "ls /home/<user>/"`)
+	cmd.Flags().StringArrayVarP(&options, "option", "o", []string{}, `allow to add more connection options. Examples: -o ControlMaster=auto`)
 
 	return cmd
 }
@@ -162,11 +171,20 @@ func RunCommand(cmd *cobra.Command, args []string) {
 		"-A", targetSessionSshUsername + "@127.0.0.1",
 		"-i", temporaryPrivatekeyFile}
 
+	for _, option := range options {
+		sshConnectionArgs = append(sshConnectionArgs, "-o", option)
+	}
+
 	if localPortForwarding != "" {
 		sshConnectionArgs = append(sshConnectionArgs, "-L", localPortForwarding)
 		// This line prevents the insterative shell from opening and keeps the server in background.
 		sshConnectionArgs = append(sshConnectionArgs, "-N")
 		fancy.Printf(SshLocalPortForwardingInfoMessage)
+	}
+
+	// Must be the last argument
+	if command != "" {
+		sshConnectionArgs = append(sshConnectionArgs, command)
 	}
 
 	sshCommand := exec.Command("ssh", sshConnectionArgs...)

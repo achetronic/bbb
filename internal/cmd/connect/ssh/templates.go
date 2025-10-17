@@ -59,4 +59,9 @@ const (
 
 	Press following combination to kill the connection once you don't need it:
 	{Bold}{White}console ~$ {Green}Cntrl + C {Reset}`
+
+	// CommandArgsConflict1ErrorMessage is the message thrown when the user is trying to establish a connection
+	// with both --local-port-forwarding (-l) and --command (-c) flags
+	CommandArgsConflict1ErrorMessage = `
+	{Red}You cannot use --local-port-forwarding (-l) and --command (-c) together.`
 )
