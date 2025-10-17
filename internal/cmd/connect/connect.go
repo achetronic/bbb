@@ -1,6 +1,7 @@
 package connect
 
 import (
+	"bbb/internal/cmd/connect/direct"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -30,6 +31,7 @@ func NewCommand() *cobra.Command {
 	}
 
 	c.AddCommand(
+		direct.NewCommand(),
 		kube.NewCommand(),
 		ssh.NewCommand(),
 		browser.NewCommand(),

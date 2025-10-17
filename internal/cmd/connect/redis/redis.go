@@ -57,7 +57,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// Redis-cli package used to open the connection
-	var redisCli string = "redis-cli"
+	var redisCli = "redis-cli"
 
 	// Check if redis-cli is present in the system, if not, exit with error
 	_, err = exec.LookPath(redisCli)
@@ -88,7 +88,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// On user failures, just inform the user
-	if response.StatusCode >= 400 && response.StatusCode < 500 {
+	if response.StatusCode >= 400 && response.StatusCode < 600 {
 		fancy.Fatalf(AuthorizeSessionUserErrorMessage, consoleStdout.String())
 	}
 
@@ -111,7 +111,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	targetSessionHost := strings.Split(targetSessionUrl.Host, ":")
 	if len(targetSessionHost) != 2 {
 		fancy.Fatalf(globals.UnexpectedErrorMessage,
-			"Failed parsing session Host. Session URL must have <address>:<port> format: "+err.Error())
+			"Failed parsing session Host. Session URL must have <address>:<port> format")
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -154,7 +154,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 			"--pass", response.Item.Credentials[0].Credential.Password)
 	}
 
-	// Boundary does not allow to define password and not an username
+	// Boundary does not allow to define password and not a username
 	// As workaround, we set in boundary username and password to the same value
 	// rescued from Vault
 	if response.Item.Credentials[0].Credential.Username != "" &&
@@ -191,6 +191,6 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	err = connectCommand.Process.Kill()
 	if err != nil {
 		fancy.Fatalf(globals.UnexpectedErrorMessage,
-			"\nFailed killing background connection to H.Boundary: %v\n", err)
+			"Failed killing background connection to H.Boundary:"+err.Error())
 	}
 }

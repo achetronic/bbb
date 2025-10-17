@@ -33,7 +33,7 @@ const (
 )
 
 var (
-	webserverPort int = GetFreeRandomPort(webserverPortRangeMin, webserverPortRangeMax)
+	webserverPort = GetFreeRandomPort(webserverPortRangeMin, webserverPortRangeMax)
 
 	//
 	targetProxyAddressPattern = "%s://127.0.0.1:%d"
@@ -112,7 +112,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// On user failures, just inform the user
-	if response.StatusCode >= 400 && response.StatusCode < 500 {
+	if response.StatusCode >= 400 && response.StatusCode < 600 {
 		fancy.Fatalf(AuthorizeSessionUserErrorMessage, consoleStdout.String())
 	}
 
@@ -145,7 +145,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	targetSessionHost := strings.Split(targetSessionUrl.Host, ":")
 	if len(targetSessionHost) != 2 {
 		fancy.Fatalf(globals.UnexpectedErrorMessage,
-			"Failed parsing session Host. Session URL must have <address>:<port> format: "+err.Error())
+			"Failed parsing session Host. Session URL must have <address>:<port> format")
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -191,7 +191,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 
 	// If there are credentials, assume bearer authentication using password as token by default.
 	// Assume basic auth when username is also present
-	var authHeader string = ""
+	var authHeader = ""
 
 	if credentialsIndex != -1 {
 		var headerAuthUsername string
@@ -234,7 +234,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 4. Open browser to the webserver created in step 3
-	// We use xdg-open or open command for Linux and MacOS systems respectively
+	// We use xdg-open or open command for Linux and macOS systems respectively
 	sourceWebserverAddress := "http://" + webserverAddress
 	browserCommand := exec.Command(browserCli, sourceWebserverAddress)
 	err = browserCommand.Run()
@@ -265,6 +265,6 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	err = connectCommand.Process.Kill()
 	if err != nil {
 		fancy.Fatalf(globals.UnexpectedErrorMessage,
-			"\nFailed killing background connection to H.Boundary: %v\n", err)
+			"Failed killing background connection to H.Boundary: "+err.Error())
 	}
 }

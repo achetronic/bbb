@@ -83,7 +83,7 @@ func RunCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// On user failures, just inform the user
-	if response.StatusCode >= 400 && response.StatusCode < 500 {
+	if response.StatusCode >= 400 && response.StatusCode < 600 {
 		fancy.Fatalf(AuthorizeSessionUserErrorMessage, consoleStdout.String())
 	}
 
